@@ -1,0 +1,25 @@
+# SOLUCIÓN AL ERROR 42601 - SQL DE LA FASE 3
+
+Problema original: syntax error at or near "day" en la línea 64.
+
+El reporte diario utilizaba `day` como alias. El archivo `003_fase3.sql` de este paquete
+lo reemplaza por `report_date`, conservando el formato JSON que espera la aplicación.
+
+INSTRUCCIONES:
+1. Abre Supabase > SQL Editor > New query.
+2. Comprueba Database > Run as > postgres.
+3. Borra todo el código de la consulta anterior.
+4. Abre `003_fase3_CORREGIDO.sql` (disponible por separado en el chat) o
+   `monkys-store-fase3/supabase/migrations/003_fase3.sql` del ZIP corregido.
+5. Copia TODO su contenido, pégalo en New query y pulsa Run una vez.
+6. Si ves `Success. No rows returned`, verifica con:
+   SELECT
+     to_regprocedure('public.report_phase3(date,date,text)') AS reportes,
+     to_regprocedure('public.manage_team_member(uuid,text,boolean)') AS usuarios;
+
+No vuelvas a ejecutar 001 ni 002; no borres tablas ni datos existentes.
+La migración contiene BEGIN y COMMIT; el error previo normalmente causa una reversión
+completa de la transacción. Si el nuevo script falla, comparte el mensaje EXACTO.
+
+NOTA: No se ejecutaron pruebas contra tu proyecto Supabase; la corrección se comprobó
+estáticamente en el archivo, pero queda pendiente verificar su ejecución real.

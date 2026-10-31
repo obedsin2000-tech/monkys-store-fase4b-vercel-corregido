@@ -1,0 +1,27 @@
+# Dependencias y resultados temporales
+node_modules/
+.next/
+.vercel/
+*.log
+*.tsbuildinfo
+.DS_Store
+# Credenciales privadas de Supabase, Vercel y otros proveedores
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+*service-account*.json
+*credentials*.json
+# Respaldos y exportaciones de clientes
+*.backup
+*.dump
+*.bak
+*_respaldo*.sql
+Monkys_Backups/
+backups/
+respaldos/
+exports/
+exportaciones/

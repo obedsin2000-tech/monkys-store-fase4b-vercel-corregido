@@ -1,0 +1,12 @@
+import Link from 'next/link';
+import {requireUser} from '@/lib/auth';
+import {PageTitle,Empty,Status} from '@/components/ui';
+import {OrderActions} from '@/components/order-actions';
+import {money,dateTime,type Order} from '@/lib/types';
+export default async function Orders(){const {supabase:s}=await requireUser();await s.rpc('expire_reservations');
+ const {data,error}=await s.from('orders').select('id,order_number,buyer_name,tiktok_handle,channel,status,payment_status,payment_method,total,created_at,expires_at,customer_id,order_lines(id,quantity,unit_price,line_total,variants(sku,size,color,products(name)))').order('created_at',{ascending:false}).limit(100);
+ const orders=(data||[]) as unknown as Order[];
+ return <><PageTitle title="Pedidos y reservas" description="Confirma pagos verificados, cancela reservas y revisa pedidos recientes."/>
+ {error&&<div className="alert error">Error de consulta: {error.message}</div>}
+ <section className="card"><h2>Últimos 100 pedidos</h2>{!orders.length?<Empty text="No hay pedidos todavía. Registra tu primera venta en Venta rápida."/>:<div className="orders-list">{orders.map(o=><article className="order-card" key={o.id}><div className="order-top"><div><b>Pedido #{o.order_number}</b><span>{dateTime(o.created_at)} · {o.channel}</span></div><div className="order-status"><Status value={o.status}/><Status value={o.payment_status}/><b>{money(o.total)}</b></div></div><p className="order-buyer">{o.buyer_name||o.tiktok_handle||'Cliente registrado'} {o.buyer_name&&o.tiktok_handle?`· ${o.tiktok_handle}`:''}</p><div className="order-lines">{o.order_lines?.map(l=><div key={l.id}>{l.quantity} × {l.variants?.products?.name||'Prenda'} <span className="muted">({l.variants?.sku}, {l.variants?.size}/{l.variants?.color})</span></div>)}</div>{o.status==='reserved'&&<div className="order-footer"><p className="muted small">{o.payment_status==='partial'?'Con adelanto; requiere completar el saldo o reembolso autorizado':`Reserva hasta ${o.expires_at?dateTime(o.expires_at):'—'}`}</p>{o.payment_status==='pending'?<OrderActions id={o.id} status={o.status}/>:<Link className="btn outline compact" href="/cobros">Registrar saldo pendiente</Link>}</div>}<div className="action-row" style={{marginTop:10}}><Link className="small-link" href="/cobros">Cobros</Link><Link className="small-link" href="/envios">Envío</Link>{o.status==='confirmed'&&<Link className="small-link" href="/devoluciones">Devolución</Link>}</div></article>)}</div>}</section></>;
+}

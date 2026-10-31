@@ -1,0 +1,15 @@
+# Archivos para Windows y documentación que no necesita el hosting
+*.bat
+*.pdf
+*.xlsx
+supabase/
+scripts/*.ps1
+*.zip
+# Los respaldos no deben salir del equipo
+Monkys_Backups/
+backups/
+respaldos/
+*.backup
+*.dump
+.env
+.env.local
