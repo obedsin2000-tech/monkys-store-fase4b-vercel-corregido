@@ -54,10 +54,10 @@ export async function receivePurchaseAction(input:unknown):Promise<ActionResult>
  const s=await ensureAdmin();const {data:id,error}=await s.rpc('receive_purchase',{p_supplier:d.supplier_id,p_reference:d.reference,p_lines:d.lines});if(error)throw new Error(error.message);changed();return {ok:true,message:'Compra recibida: inventario y Kardex actualizados.',id};}catch(e){return err(e);}
 }
 export async function createOrderAction(input:unknown):Promise<ActionResult>{
- try{const d=orderSchema.parse(input);if(!d.buyer&&!d.handle&&!d.customer_id)throw new Error('Identifica al comprador');
+ try{const d=orderSchema.parse(input);if(d.mode==='reserve'&&!d.buyer&&!d.handle&&!d.customer_id)throw new Error('Para reservar, identifica al comprador por nombre o cliente frecuente. El usuario de TikTok es opcional.');
  if(d.mode==='paid'&&!d.method)throw new Error('Selecciona un medio de pago previamente verificado');
  const set=new Set(d.lines.map(x=>x.variant_id));if(set.size!==d.lines.length)throw new Error('El carrito contiene SKUs duplicados');
- const {supabase:s}=await requireUser();const {data:id,error}=await s.rpc('create_order',{p_key:d.request_key,p_buyer:d.buyer,p_handle:d.handle,p_customer:d.customer_id,p_channel:d.channel,p_mode:d.mode,p_method:d.method,p_minutes:d.minutes,p_lines:d.lines});
+ const {supabase:s}=await requireUser();const {data:id,error}=await s.rpc('create_order',{p_key:d.request_key,p_buyer:d.buyer||(!d.handle&&!d.customer_id?'Venta rápida sin identificar':''),p_handle:d.handle,p_customer:d.customer_id,p_channel:d.channel,p_mode:d.mode,p_method:d.method,p_minutes:d.minutes,p_lines:d.lines});
  if(error)throw new Error(error.message);changed();return {ok:true,message:d.mode==='reserve'?'Pedido reservado correctamente.':'Venta confirmada y stock descontado.',id};
  }catch(e){return err(e);}
 }
