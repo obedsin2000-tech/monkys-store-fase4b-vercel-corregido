@@ -3,23 +3,69 @@ import {PageTitle,Empty,Status} from '@/components/ui';
 import {ShipmentManager,type ShippingItem} from '@/components/shipment-manager';
 import {dateTime} from '@/lib/types';
 import Link from 'next/link';
-const pageSize=50;
-export default async function Envios({searchParams}:{searchParams:Promise<{q?:string;estado?:string;page?:string}>}){const {supabase:s,role}=await requireUser();const params=await searchParams;const q=(params.q||'').trim().replace(/[,%()_*\\]/g,' ').slice(0,80);const estado=['confirmed','reserved'].includes(params.estado||'')?params.estado!:'';const page=Math.max(1,Number.parseInt(params.page||'1',10)||1);
- let orderQuery=s.from('orders').select('id,order_number,buyer_name,tiktok_handle,status',{count:'exact'}).in('status',['confirmed','reserved']);if(estado)orderQuery=orderQuery.eq('status',estado);if(q)orderQuery=orderQuery.or(`buyer_name.ilike.%${q}%,tiktok_handle.ilike.%${q}%`);
- const [{data:orders,error,count},{data:ships}]=await Promise.all([
- orderQuery.order('created_at',{ascending:false}).range((page-1)*pageSize,page*pageSize-1),
- s.from('shipments').select('id,order_id,recipient_name,phone,department,province,district,carrier,agency_address,tracking_code,status,updated_at').order('updated_at',{ascending:false}).limit(300)
+
+const queuePageSize=50;
+const shipmentPageSize=30;
+const shipmentStatuses=['pending','preparing','dispatched','delivered'];
+
+export default async function Envios({searchParams}:{searchParams:Promise<{q?:string;estado?:string;page?:string;sq?:string;sestado?:string;spage?:string}>}){
+ const {supabase:s,role}=await requireUser();
+ const params=await searchParams;
+ const q=(params.q||'').trim().replace(/[,%()_*\\]/g,' ').slice(0,80);
+ const estado=['confirmed','reserved'].includes(params.estado||'')?params.estado!:'';
+ const page=Math.max(1,Number.parseInt(params.page||'1',10)||1);
+ const sq=(params.sq||'').trim().replace(/[,%()_*\\]/g,' ').slice(0,80);
+ const shipmentStatus=shipmentStatuses.includes(params.sestado||'')?params.sestado!:'';
+ const shipmentPage=Math.max(1,Number.parseInt(params.spage||'1',10)||1);
+
+ let orderQuery=s.from('orders').select('id,order_number,buyer_name,tiktok_handle,status',{count:'exact'}).in('status',['confirmed','reserved']);
+ if(estado)orderQuery=orderQuery.eq('status',estado);
+ if(q)orderQuery=orderQuery.or(`buyer_name.ilike.%${q}%,tiktok_handle.ilike.%${q}%`);
+ const {data:orders,error:ordersError,count}=await orderQuery.order('created_at',{ascending:false}).range((page-1)*queuePageSize,page*queuePageSize-1);
+
+ const orderIds=(orders||[]).map(o=>o.id);
+ const orderShipmentResult=orderIds.length
+  ? await s.from('shipments').select('id,order_id,recipient_name,phone,department,province,district,carrier,agency_address,tracking_code,status,updated_at').in('order_id',orderIds)
+  : {data:[],error:null};
+
+ let shipmentQuery=s.from('shipments').select('id,order_id,recipient_name,phone,department,province,district,carrier,agency_address,tracking_code,status,updated_at',{count:'exact'});
+ if(shipmentStatus)shipmentQuery=shipmentQuery.eq('status',shipmentStatus);
+ if(sq)shipmentQuery=shipmentQuery.or(`recipient_name.ilike.%${sq}%,province.ilike.%${sq}%,tracking_code.ilike.%${sq}%`);
+ const [{data:ships,error:shipmentsError,count:shipmentCount},{data:pendingPrints}]=await Promise.all([
+  shipmentQuery.order('updated_at',{ascending:false}).range((shipmentPage-1)*shipmentPageSize,shipmentPage*shipmentPageSize-1),
+  s.from('shipments').select('order_id').in('status',['preparing','pending']).order('updated_at',{ascending:false}).limit(30)
  ]);
- let shipmentRows=(ships||[]).map(s=>({...s,dni:null as string|null}));
- if(role==='admin'&&shipmentRows.length){const {data:dniRows}=await s.rpc('admin_get_shipment_dni',{p_orders:shipmentRows.map(s=>s.order_id)});const dniByOrder=new Map<string,string|null>((dniRows||[]).map((row:{order_id:string;dni:string|null})=>[row.order_id,row.dni] as const));shipmentRows=shipmentRows.map(s=>({...s,dni:dniByOrder.get(s.order_id)||null}));}
- const byOrder=new Map(shipmentRows.map(s=>[s.order_id,s]));const items:ShippingItem[]=(orders||[]).map(o=>({id:o.id,order_number:o.order_number,buyer:o.buyer_name||o.tiktok_handle||'Cliente',order_status:o.status,shipping:byOrder.get(o.id)||null}));
- const printIds=(ships||[]).filter(s=>s.status==='preparing'||s.status==='pending').map(s=>s.order_id).slice(0,30).join(',');
- const pages=Math.max(1,Math.ceil((count||0)/pageSize));const href=(p:number)=>`/envios?${new URLSearchParams({...(q?{q}:{}),...(estado?{estado}:{}),page:String(p)})}`;
+
+ let orderShipmentRows=(orderShipmentResult.data||[]).map(item=>({...item,dni:null as string|null}));
+ if(role==='admin'&&orderShipmentRows.length){
+  const {data:dniRows}=await s.rpc('admin_get_shipment_dni',{p_orders:orderShipmentRows.map(item=>item.order_id)});
+  const dniByOrder=new Map<string,string|null>((dniRows||[]).map((row:{order_id:string;dni:string|null})=>[row.order_id,row.dni] as const));
+  orderShipmentRows=orderShipmentRows.map(item=>({...item,dni:dniByOrder.get(item.order_id)||null}));
+ }
+ const shipmentByOrder=new Map(orderShipmentRows.map(item=>[item.order_id,item]));
+ const items:ShippingItem[]=(orders||[]).map(o=>({id:o.id,order_number:o.order_number,buyer:o.buyer_name||o.tiktok_handle||'Cliente',order_status:o.status,shipping:shipmentByOrder.get(o.id)||null}));
+ const printIds=(pendingPrints||[]).map(item=>item.order_id).join(',');
+ const queuePages=Math.max(1,Math.ceil((count||0)/queuePageSize));
+ const shipmentPages=Math.max(1,Math.ceil((shipmentCount||0)/shipmentPageSize));
+ const queueHref=(p:number)=>`/envios?${new URLSearchParams({...(q?{q}:{}),...(estado?{estado}:{}),page:String(p),...(sq?{sq}:{}),...(shipmentStatus?{sestado:shipmentStatus}:{}),spage:String(shipmentPage)})}`;
+ const shipmentHref=(p:number)=>`/envios?${new URLSearchParams({...(q?{q}:{}),...(estado?{estado}:{}),page:String(page),...(sq?{sq}:{}),...(shipmentStatus?{sestado:shipmentStatus}:{}),spage:String(p)})}`;
+ const clearQueueHref=`/envios?${new URLSearchParams({...(sq?{sq}:{}),...(shipmentStatus?{sestado:shipmentStatus}:{}),spage:String(shipmentPage)})}`;
+ const clearShipmentsHref=`/envios?${new URLSearchParams({...(q?{q}:{}),...(estado?{estado}:{}),page:String(page)})}`;
+
  return <><PageTitle title="Envíos y rótulos" description="Prepara los paquetes pagados y lleva un control claro de cada despacho."/>
- {error&&<div className="alert error">Error de lectura: {error.message}</div>}
- <section className="card"><div className="section-title"><h2>Cola de pedidos para despacho</h2><span className="muted small">{count||0} resultados · Página {page} de {pages}</span></div><form method="get" className="queue-filters"><label>Buscar comprador<input name="q" defaultValue={q} placeholder="Nombre o usuario de TikTok" maxLength={80}/></label><label>Estado del pedido<select name="estado" defaultValue={estado}><option value="">Reservados y pagados</option><option value="confirmed">Pagados / confirmados</option><option value="reserved">Reservados (no despachar)</option></select></label><input type="hidden" name="page" value="1"/><button className="btn primary">Filtrar</button><Link className="btn outline" href="/envios">Limpiar</Link></form>{items.length?<ShipmentManager orders={items} canViewDni={role==='admin'}/>:<Empty text="No se encontraron pedidos para esos filtros."/>}<div className="queue-pagination"><Link aria-disabled={page<=1} className={`btn outline ${page<=1?'disabled-link':''}`} href={href(Math.max(1,page-1))}>Anterior</Link><span>{items.length} pedidos mostrados</span><Link aria-disabled={page>=pages} className={`btn outline ${page>=pages?'disabled-link':''}`} href={href(Math.min(pages,page+1))}>Siguiente</Link></div></section>
+ {(ordersError||shipmentsError||orderShipmentResult.error)&&<div className="alert error">No se pudieron cargar todos los datos de envíos. Actualiza la página y vuelve a intentar.</div>}
+ <section className="card"><div className="section-title"><h2>Cola de pedidos para despacho</h2><span className="muted small">{count||0} resultados · Página {page} de {queuePages}</span></div>
+ <form method="get" className="queue-filters"><label>Buscar comprador<input name="q" defaultValue={q} placeholder="Nombre o usuario de TikTok" maxLength={80}/></label><label>Estado del pedido<select name="estado" defaultValue={estado}><option value="">Reservados y pagados</option><option value="confirmed">Pagados / confirmados</option><option value="reserved">Reservados (no despachar)</option></select></label>
+ <input type="hidden" name="page" value="1"/><input type="hidden" name="sq" value={sq}/><input type="hidden" name="sestado" value={shipmentStatus}/><input type="hidden" name="spage" value={shipmentPage}/><button className="btn primary">Filtrar</button><Link className="btn outline" href={clearQueueHref}>Limpiar</Link></form>
+ {items.length?<ShipmentManager orders={items} canViewDni={role==='admin'}/>:<Empty text="No se encontraron pedidos para esos filtros."/>}
+ <div className="queue-pagination"><Link aria-disabled={page<=1} className={`btn outline ${page<=1?'disabled-link':''}`} href={queueHref(Math.max(1,page-1))}>Anterior</Link><span>Página {page} / {queuePages}</span><Link aria-disabled={page>=queuePages} className={`btn outline ${page>=queuePages?'disabled-link':''}`} href={queueHref(Math.min(queuePages,page+1))}>Siguiente</Link></div></section>
+
  <section className="card"><div className="section-title"><h2>Paquetes registrados</h2><div className="action-row">{printIds&&<><Link className="btn outline" href={`/envios/rotulos?ids=${encodeURIComponent(printIds)}`} target="_blank">Rótulos pendientes (sin DNI)</Link>{role==='admin'&&<Link className="btn outline" href={`/envios/rotulos?ids=${encodeURIComponent(printIds)}&dni=1`} target="_blank">Rótulos con DNI (admin)</Link>}</>}<Link className="btn outline" href="/api/envios/exportar">CSV para Word (sin DNI)</Link>{role==='admin'&&<Link className="btn outline" href="/api/envios/exportar?dni=1">CSV con DNI (admin)</Link>}</div></div>
- <div className="table-wrap"><table><thead><tr><th>Destinatario</th><th>Provincia</th><th>Agencia</th><th>Estado</th><th>Actualizado</th></tr></thead><tbody>{shipmentRows.map(s=><tr key={s.id}><td>{s.recipient_name}</td><td>{s.province}</td><td>{s.carrier==='shalom'?'Shalom':'Otra'}</td><td><Status value={s.status}/></td><td>{dateTime(s.updated_at)}</td></tr>)}</tbody></table></div></section>
+ <form method="get" className="queue-filters"><label>Buscar paquete<input name="sq" defaultValue={sq} placeholder="Destinatario, provincia o guía" maxLength={80}/></label><label>Estado del envío<select name="sestado" defaultValue={shipmentStatus}><option value="">Todos los estados</option><option value="pending">Pendiente</option><option value="preparing">En preparación</option><option value="dispatched">Despachado</option><option value="delivered">Entregado</option></select></label>
+ <input type="hidden" name="spage" value="1"/><input type="hidden" name="q" value={q}/><input type="hidden" name="estado" value={estado}/><input type="hidden" name="page" value={page}/><button className="btn primary">Buscar paquetes</button><Link className="btn outline" href={clearShipmentsHref}>Limpiar</Link></form>
+ <div className="section-title"><span className="muted small">{shipmentCount||0} paquete(s) · Página {shipmentPage} de {shipmentPages}</span></div>
+ {!ships?.length?<Empty text="No se encontraron paquetes con esos filtros."/>:<div className="table-wrap"><table><thead><tr><th>Destinatario</th><th>Provincia</th><th>Agencia</th><th>Estado</th><th>Actualizado</th></tr></thead><tbody>{ships.map(item=><tr key={item.id}><td>{item.recipient_name}</td><td>{item.province}</td><td>{item.carrier==='shalom'?'Shalom':'Otra'}</td><td><Status value={item.status}/></td><td>{dateTime(item.updated_at)}</td></tr>)}</tbody></table></div>}
+ <div className="queue-pagination"><Link aria-disabled={shipmentPage<=1} className={`btn outline ${shipmentPage<=1?'disabled-link':''}`} href={shipmentHref(Math.max(1,shipmentPage-1))}>Anterior</Link><span>Página {shipmentPage} / {shipmentPages}</span><Link aria-disabled={shipmentPage>=shipmentPages} className={`btn outline ${shipmentPage>=shipmentPages?'disabled-link':''}`} href={shipmentHref(Math.min(shipmentPages,shipmentPage+1))}>Siguiente</Link></div></section>
  <div className="alert warn">El sistema registra el envío y genera rótulos, pero no reserva envíos ni consulta estados automáticamente en Shalom. Los datos personales deben manejarse de forma restringida.</div>
  </>;
 }
