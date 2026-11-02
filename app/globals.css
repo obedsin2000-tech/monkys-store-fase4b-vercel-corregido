@@ -62,3 +62,13 @@
  .print-label-sheet[data-size="40x25"] .print-barcode-label svg{height:8mm}
  .print-barcode-label .label-meta{font-size:7pt;font-weight:bold}
 }
+.sidebar{overflow-y:auto}
+.sidebar-bottom{flex-shrink:0}
+.nav-group{display:flex;flex-direction:column;gap:2px}
+.nav-group+.nav-group{margin-top:7px}
+.queue-filters{display:grid;grid-template-columns:minmax(220px,2fr) minmax(170px,1fr) auto auto;align-items:end;gap:10px;margin-bottom:18px}
+.queue-filters label{display:flex;flex-direction:column;gap:6px;color:#4f6273;font-size:.79rem;font-weight:650}
+.queue-filters input,.queue-filters select{border:1px solid #d7e0e7;border-radius:9px;background:#fff;padding:10px 12px;min-height:42px;color:#263d51}
+.queue-pagination{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:18px;color:var(--muted);font-size:.82rem}
+.disabled-link{pointer-events:none;opacity:.45}
+@media(max-width:720px){.queue-filters{grid-template-columns:1fr 1fr}.queue-filters label:first-child{grid-column:1/-1}.queue-filters .btn{padding:9px 11px}}

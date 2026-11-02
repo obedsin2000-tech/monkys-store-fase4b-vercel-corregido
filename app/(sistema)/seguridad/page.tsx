@@ -7,7 +7,7 @@ type SecurityReport={
  generated_at:string;phase:string;tables:TableCheck[];
  anon_security_definer_count:number;active_admins:number;
  registered_profiles:number;audit_events_30d:number;
- direct_writes:{variants:boolean;orders:boolean;profiles:boolean};
+ direct_writes:{variants:boolean;orders:boolean;profiles:boolean;inventory_counts?:boolean;inventory_count_lines?:boolean};
  backup_status:string;
 };
 function Check({ok,title,detail}:{ok:boolean;title:string;detail:string}){
@@ -31,7 +31,7 @@ export default async function SecurityPage(){
     <h2>Centro de seguridad · Fase 4A</h2>
     <p>Este panel consulta la configuración real de Supabase. No crea ni restaura respaldos desde el navegador.</p>
   </div></div>
-  {error&&<div className="alert warn">No se pudo ejecutar el diagnóstico: {error.message}. Verifica que aplicaste únicamente 004_fase4a.sql.</div>}
+  {error&&<div className="alert warn">No se pudo ejecutar el diagnóstico: {error.message}. Verifica las migraciones 004_fase4a.sql, 005_fase4b.sql y 006_fase4b_security_report.sql.</div>}
   {report&&<>
     <div className="kpi-grid three-cards">
       <div className="card mini-kpi"><span>Tablas protegidas</span><strong>{healthy}/{checks.length}</strong><small>RLS activo y sin lectura anónima</small></div>
@@ -40,7 +40,7 @@ export default async function SecurityPage(){
     </div>
     <section className="card"><div className="section-title"><h2><LockKeyhole size={18}/> Comprobaciones de permisos</h2></div>
       <div className="security-grid">
-       <Check ok={healthy===checks.length&&checks.length===19} title="Protección de tablas"
+       <Check ok={healthy===checks.length&&checks.length===21} title="Protección de tablas"
          detail={`${healthy} de ${checks.length} tablas con RLS y sin lectura anónima`}/>
        <Check ok={report.anon_security_definer_count===0} title="Funciones de privilegio elevado"
          detail={`${report.anon_security_definer_count} funciones accesibles para el rol anónimo`}/>

@@ -1,5 +1,35 @@
 # Informe de revisión — Monky's Store ERP Fase 4B para Vercel
 
+Revisión actualizada: 2 de noviembre de 2026. Fuente: paquete Fase 4B corregido. La compilación de código se ejecutó en el entorno local; no se conectó ni modificó una base Supabase del usuario.
+
+## Cambios de esta revisión
+
+1. DNI excluido por defecto en rótulos y exportaciones. La inclusión explícita requiere rol administrador; las consultas para rótulos omiten el campo cuando no corresponde.
+2. Cola de pedidos con filtro por comprador/usuario, estado y paginación de 50 registros.
+3. Cola de preparación de envíos con búsqueda y paginación de pedidos.
+4. Venta rápida con búsqueda en servidor bajo demanda, lectura exacta de SKU/código de barras y foco inicial en el escáner. Deja de cargar hasta 1.000 variantes en cada apertura.
+5. Navegación agrupada por operación, con selección correcta de rutas anidadas.
+6. Migración `006_fase4b_operaciones.sql` agrega índices de búsqueda y amplía el diagnóstico de seguridad a 21 tablas, incluidas las dos tablas de conteos.
+7. Script de respaldo restringe los permisos de la carpeta local de copias. Se aclara que esto no cifra el equipo ni reemplaza el ensayo de restauración y la copia de Storage.
+8. Incluido `package-lock.json`; los comandos de instalación usan `npm ci` cuando el archivo existe.
+
+## Verificaciones de esta revisión
+
+- `npm run typecheck`: correcto.
+- `npm run build`: correcto con Node.js 24.22.0 y Next.js 16.4.4.
+- No se ejecutó una base de datos real ni se modificó el proyecto Supabase.
+
+## Pendiente antes del uso con datos reales
+
+- Aplicar la migración 006 en Supabase después de las migraciones anteriores, sin volver a ejecutar 001–005.
+- Revisar el diagnóstico de las 21 tablas y los permisos de roles en la base real.
+- Restaurar una copia en un proyecto Supabase de prueba y respaldar Storage por separado.
+- Verificar rótulos y lectura de códigos con impresora y escáner reales.
+
+---
+
+## Revisión anterior
+
 Fecha: 30 de octubre de 2026. Fuente: el ZIP original `Monkys_Store_ERP_Fase4B.zip` de la conversación. No modifica las tablas de Supabase.
 
 ## Mejoras realizadas en este paquete
@@ -23,7 +53,7 @@ Fecha: 30 de octubre de 2026. Fuente: el ZIP original `Monkys_Store_ERP_Fase4B.z
 - **Sí**: prueba local de lógica Code 128 mediante `node --experimental-strip-types tests/check-phase4b.mjs` (Node 22).
 - **Sí**: inspección de que el ZIP de entrega no incorpora `.env.local` ni credenciales reales de usuario.
 - **Sí**: revisión manual de la autentificación (`requireUser`, validación de `getClaims`, perfil activo), el `proxy.ts` y protección de las API de reportes.
-- **Pendiente**: `npm run build` y `npm run typecheck` completos. El entorno de preparación no consiguió descargar dependencias desde npm; esto **no** prueba que el código compile en Vercel.
+- **Pendiente en la revisión anterior**: `npm run build` y `npm run typecheck` completos. Ya quedaron verificados correctamente en la revisión del 2 de noviembre, descrita al inicio de este informe.
 - **Pendiente**: auditoría integral de las funciones SQL de privilegios elevados y todas las políticas RLS sobre una base activa.
 - **Pendiente**: prueba de inicio de sesión y redirecciones en dominio real, rendimiento, impresión y seguridad con cuentas de prueba.
 - **Pendiente**: lockfile `package-lock.json`; se generará con `npm install` en Windows cuando existan las dependencias y se confirmará tras un build correcto.

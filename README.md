@@ -140,4 +140,10 @@ En **Compras**, escanea una etiqueta para seleccionar su variante. Revisa cantid
 
 ### Estado real de la entrega
 
-El código ha pasado una revisión de sintaxis TypeScript y pruebas del cálculo de códigos Code 128 en este entorno. **Aún falta compilarlo con todas sus dependencias y ejecutar la migración y las funciones sobre una base Supabase real**, así como probar impresión y lectores físicos. Esos pasos deben validarse en tu equipo antes de usarlo con mercancía real.
+El 2 de noviembre de 2026, `npm run typecheck` y `npm run build` terminaron correctamente en este entorno con Node.js 24. **Aún falta ejecutar la migración 006 y verificar los permisos y funciones sobre tu base Supabase real**, además de probar una restauración en una base separada, Storage e impresión con el lector físico. Valida esos pasos antes de registrar mercancía real.
+
+### Actualización operativa incluida en este paquete
+
+Esta versión agrega `supabase/migrations/006_fase4b_operaciones.sql` para optimizar búsquedas y ampliar el diagnóstico de seguridad a las tablas de conteo. Aplícala una sola vez después de Fase 4B siguiendo `GUIA_MIGRACION_006_OPERACIONES.md`; no repitas las migraciones anteriores.
+
+Los rótulos y el CSV excluyen el DNI por defecto. La opción para incluirlo requiere una cuenta administradora. La guía también explica cómo se protegen los permisos de la carpeta local de respaldos y las limitaciones del respaldo PostgreSQL.

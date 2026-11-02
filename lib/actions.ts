@@ -3,7 +3,7 @@ import {revalidatePath} from 'next/cache';
 import {z} from 'zod';
 import ExcelJS from 'exceljs';
 import {requireUser} from '@/lib/auth';
-import type {ActionResult} from '@/lib/types';
+import type {ActionResult,Variant} from '@/lib/types';
 
 const text=(max=120)=>z.string().trim().min(2,'Ingresa al menos 2 caracteres').max(max);
 const price=z.coerce.number().finite().min(0).max(999999999);
@@ -17,6 +17,27 @@ const orderSchema=z.object({request_key:uuid,buyer:z.string().trim().max(120),ha
 function err(e:unknown):ActionResult{return {ok:false,error:e instanceof Error?e.message:'Error inesperado. Intenta nuevamente.'};}
 function changed(){['/panel','/productos','/inventario','/compras','/ventas','/pedidos','/clientes'].forEach(p=>revalidatePath(p));}
 async function ensureAdmin(){const auth=await requireUser();if(auth.role!=='admin')throw new Error('Esta operación requiere ser administrador');return auth.supabase;}
+
+export async function searchSaleVariantsAction(term:string):Promise<{variants:Variant[];error?:string}>{
+ try{
+  const q=z.string().trim().min(2).max(80).parse(term).replace(/[,%()_*\\]/g,' ').trim();if(q.length<2)return {variants:[]};
+  const {supabase:s}=await requireUser();const pattern=`%${q}%`;
+  const [{data:matches,error},{data:products}]=await Promise.all([
+   s.from('variants').select('*,products(name,product_code)').eq('active',true).or(`sku.ilike.${pattern},barcode.ilike.${pattern},size.ilike.${pattern},color.ilike.${pattern}`).order('sku').limit(50),
+   s.from('products').select('id').eq('active',true).ilike('name',pattern).limit(50)
+  ]);
+  if(error)throw new Error(error.message);let results=(matches||[]) as unknown as Variant[];
+  const ids=(products||[]).map(p=>p.id);if(ids.length){const {data,error:productError}=await s.from('variants').select('*,products(name,product_code)').eq('active',true).in('product_id',ids).order('sku').limit(50);if(productError)throw new Error(productError.message);const byId=new Map(results.map(v=>[v.id,v]));for(const v of (data||[]) as unknown as Variant[])byId.set(v.id,v);results=[...byId.values()].slice(0,50);}
+  return {variants:results};
+ }catch(e){return {variants:[],error:e instanceof Error?e.message:'No se pudo buscar el catálogo.'};}
+}
+export async function findSaleVariantAction(rawCode:string):Promise<{variant?:Variant;error?:string}>{
+ try{const code=z.string().trim().min(1).max(60).parse(rawCode).toUpperCase();const {supabase:s}=await requireUser();
+  let {data,error}=await s.from('variants').select('*,products(name,product_code)').eq('barcode',code).maybeSingle();if(error)throw new Error(error.message);
+  if(!data){const result=await s.from('variants').select('*,products(name,product_code)').eq('sku',code).maybeSingle();data=result.data;error=result.error;if(error)throw new Error(error.message);}
+  if(!data)return {error:'Código no encontrado. Comprueba que sea una variante registrada.'};return {variant:data as unknown as Variant};
+ }catch(e){return {error:e instanceof Error?e.message:'No se pudo consultar el código.'};}
+}
 
 export async function createProductAction(input:unknown):Promise<ActionResult>{
  try{const data=itemSchema.parse(input);const s=await ensureAdmin();const {data:id,error}=await s.rpc('create_catalog_item',{p_data:data});if(error)throw new Error(error.message);changed();return {ok:true,message:'Producto y variante creados correctamente.',id};}catch(e){return err(e);}

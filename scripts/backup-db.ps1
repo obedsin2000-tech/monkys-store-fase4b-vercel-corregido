@@ -49,6 +49,11 @@ try {
  $env:PGCONNECT_TIMEOUT='20'
  $folder = Join-Path $env:USERPROFILE 'Monkys_Backups'
  New-Item -ItemType Directory -Path $folder -Force | Out-Null
+ # Restringe la carpeta y sus respaldos al usuario actual, SYSTEM y administradores locales.
+ # Esto reduce exposición accidental; para pérdida/robo del equipo también se requiere cifrado de disco.
+ $currentUser = (& whoami).Trim()
+ & icacls $folder '/inheritance:r' '/grant:r' "$($currentUser):(OI)(CI)F" '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' '/T' '/C' | Out-Null
+ if ($LASTEXITCODE -ne 0) { throw 'No pude restringir los permisos de la carpeta de respaldo. No se generó la copia.' }
  $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
  $target = Join-Path $folder ("monkys_${stamp}.backup")
  $backupFileValidated = $false

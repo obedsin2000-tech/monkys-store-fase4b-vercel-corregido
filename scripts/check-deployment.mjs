@@ -7,12 +7,13 @@ const checks=[
  ['Inicio de sesión',exists('app/ingresar/page.tsx')&&exists('app/auth/callback/route.ts')],
  ['Protección de sesión',exists('proxy.ts')&&exists('lib/auth.ts')],
  ['Ventas e inventario',exists('app/(sistema)/ventas/page.tsx')&&exists('app/(sistema)/inventario/page.tsx')],
- ['Códigos de barras',exists('components/barcode-svg.tsx')&&exists('supabase/migrations/005_fase4b.sql')],
+ ['Códigos de barras y mejora operativa',exists('components/barcode-svg.tsx')&&exists('supabase/migrations/005_fase4b.sql')&&exists('supabase/migrations/006_fase4b_operaciones.sql')],
  ['Configuración sin secretos',exists('.env.example')&&exists('.gitignore')],
  ['Next config',exists('next.config.ts')],
 ];
 const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
 checks.push(['Comando de compilación',pkg.scripts?.build==='next build']);
+checks.push(['Instalación reproducible',exists('package-lock.json')]);
 checks.push(['Dependencias fundamentales',!!pkg.dependencies?.next&&!!pkg.dependencies?.['@supabase/ssr']]);
 const ignored=fs.readFileSync(path.join(root,'.gitignore'),'utf8');
 checks.push(['Ignorar archivos .env',ignored.includes('.env.*')]);
