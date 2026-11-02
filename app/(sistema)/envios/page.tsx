@@ -18,9 +18,22 @@ export default async function Envios({searchParams}:{searchParams:Promise<{q?:st
  const shipmentStatus=shipmentStatuses.includes(params.sestado||'')?params.sestado!:'';
  const shipmentPage=Math.max(1,Number.parseInt(params.spage||'1',10)||1);
 
- let orderQuery=s.from('orders').select('id,order_number,buyer_name,tiktok_handle,status',{count:'exact'}).in('status',['confirmed','reserved']);
+ let customerLookupError:null|Error=null;
+ let matchingCustomerIds:string[]=[];
+ if(q){
+  const {data:matchedCustomers,error}=await s.from('customers').select('id').or(`name.ilike.%${q}%,tiktok_handle.ilike.%${q}%,phone.ilike.%${q}%`).limit(100);
+  customerLookupError=error;
+  matchingCustomerIds=(matchedCustomers||[]).map(customer=>customer.id);
+ }
+ let orderQuery=s.from('orders').select('id,order_number,buyer_name,tiktok_handle,status,customers(name)',{count:'exact'}).in('status',['confirmed','reserved']);
  if(estado)orderQuery=orderQuery.eq('status',estado);
- if(q)orderQuery=orderQuery.or(`buyer_name.ilike.%${q}%,tiktok_handle.ilike.%${q}%`);
+ if(q){
+  const filters=[`buyer_name.ilike.%${q}%`,`tiktok_handle.ilike.%${q}%`];
+  const numericSearch=q.replace(/^(pedido\s*)?#\s*/i,'').trim();
+  if(/^\d{1,15}$/.test(numericSearch))filters.push(`order_number.eq.${numericSearch}`);
+  if(matchingCustomerIds.length)filters.push(`customer_id.in.(${matchingCustomerIds.join(',')})`);
+  orderQuery=orderQuery.or(filters.join(','));
+ }
  const {data:orders,error:ordersError,count}=await orderQuery.order('created_at',{ascending:false}).range((page-1)*queuePageSize,page*queuePageSize-1);
 
  const orderIds=(orders||[]).map(o=>o.id);
@@ -43,7 +56,10 @@ export default async function Envios({searchParams}:{searchParams:Promise<{q?:st
   orderShipmentRows=orderShipmentRows.map(item=>({...item,dni:dniByOrder.get(item.order_id)||null}));
  }
  const shipmentByOrder=new Map(orderShipmentRows.map(item=>[item.order_id,item]));
- const items:ShippingItem[]=(orders||[]).map(o=>({id:o.id,order_number:o.order_number,buyer:o.buyer_name||o.tiktok_handle||'Cliente',order_status:o.status,shipping:shipmentByOrder.get(o.id)||null}));
+ const items:ShippingItem[]=(orders||[]).map(o=>{
+  const linkedCustomerName=Array.isArray(o.customers)?o.customers[0]?.name:(o.customers as unknown as {name:string}|null)?.name;
+  return {id:o.id,order_number:o.order_number,buyer:o.buyer_name||linkedCustomerName||o.tiktok_handle||'Cliente',order_status:o.status,shipping:shipmentByOrder.get(o.id)||null};
+ });
  const printIds=(pendingPrints||[]).map(item=>item.order_id).join(',');
  const queuePages=Math.max(1,Math.ceil((count||0)/queuePageSize));
  const shipmentPages=Math.max(1,Math.ceil((shipmentCount||0)/shipmentPageSize));
@@ -53,9 +69,9 @@ export default async function Envios({searchParams}:{searchParams:Promise<{q?:st
  const clearShipmentsHref=`/envios?${new URLSearchParams({...(q?{q}:{}),...(estado?{estado}:{}),page:String(page)})}`;
 
  return <><PageTitle title="Envíos y rótulos" description="Prepara los paquetes pagados y lleva un control claro de cada despacho."/>
- {(ordersError||shipmentsError||orderShipmentResult.error)&&<div className="alert error">No se pudieron cargar todos los datos de envíos. Actualiza la página y vuelve a intentar.</div>}
+ {(ordersError||shipmentsError||orderShipmentResult.error||customerLookupError)&&<div className="alert error">No se pudieron cargar todos los datos de envíos. Actualiza la página y vuelve a intentar.</div>}
  <section className="card"><div className="section-title"><h2>Cola de pedidos para despacho</h2><span className="muted small">{count||0} resultados · Página {page} de {queuePages}</span></div>
- <form method="get" className="queue-filters"><label>Buscar comprador<input name="q" defaultValue={q} placeholder="Nombre o usuario de TikTok" maxLength={80}/></label><label>Estado del pedido<select name="estado" defaultValue={estado}><option value="">Reservados y pagados</option><option value="confirmed">Pagados / confirmados</option><option value="reserved">Reservados (no despachar)</option></select></label>
+ <form method="get" className="queue-filters"><label>Buscar comprador o pedido<input name="q" defaultValue={q} placeholder="Nombre, teléfono, TikTok o # de pedido" maxLength={80}/></label><label>Estado del pedido<select name="estado" defaultValue={estado}><option value="">Reservados y pagados</option><option value="confirmed">Pagados / confirmados</option><option value="reserved">Reservados (no despachar)</option></select></label>
  <input type="hidden" name="page" value="1"/><input type="hidden" name="sq" value={sq}/><input type="hidden" name="sestado" value={shipmentStatus}/><input type="hidden" name="spage" value={shipmentPage}/><button className="btn primary">Filtrar</button><Link className="btn outline" href={clearQueueHref}>Limpiar</Link></form>
  {items.length?<ShipmentManager orders={items} canViewDni={role==='admin'}/>:<Empty text="No se encontraron pedidos para esos filtros."/>}
  <div className="queue-pagination"><Link aria-disabled={page<=1} className={`btn outline ${page<=1?'disabled-link':''}`} href={queueHref(Math.max(1,page-1))}>Anterior</Link><span>Página {page} / {queuePages}</span><Link aria-disabled={page>=queuePages} className={`btn outline ${page>=queuePages?'disabled-link':''}`} href={queueHref(Math.min(queuePages,page+1))}>Siguiente</Link></div></section>
