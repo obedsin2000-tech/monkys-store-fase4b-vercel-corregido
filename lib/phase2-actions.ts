@@ -17,7 +17,7 @@ export async function paymentAction(input:unknown):Promise<ActionResult>{
 }
 export async function shipmentAction(input:unknown):Promise<ActionResult>{
  try{const d=z.object({order:id,recipient_name:z.string().trim().min(2).max(120),phone:z.string().trim().min(6).max(30),dni:z.string().trim().max(15),department:z.string().trim().max(100),province:z.string().trim().min(2).max(100),district:z.string().trim().max(100),carrier:z.enum(['shalom','otro']),agency_address:z.string().trim().min(4).max(250)}).parse(input);
- const {supabase:s}=await requireUser();const {data,error}=await s.rpc('save_shipment',{p_order:d.order,p_data:d});if(error)throw new Error(error.message);refresh();return {ok:true,id:data,message:'Datos de envío guardados.'};}catch(e){return err(e);}
+ const {supabase:s,role}=await requireUser();const {data,error}=await s.rpc('save_shipment',{p_order:d.order,p_data:{...d,dni:role==='admin'?d.dni:''}});if(error)throw new Error(error.message);refresh();return {ok:true,id:data,message:'Datos de envío guardados.'};}catch(e){return err(e);}
 }
 export async function shipmentStatusAction(input:unknown):Promise<ActionResult>{
  try{const d=z.object({order:id,status:z.enum(['preparing','dispatched','delivered']),tracking:z.string().trim().max(120)}).parse(input);

@@ -5,11 +5,11 @@ import {ResultMessage,Status} from '@/components/ui';
 import type {ActionResult} from '@/lib/types';
 export type ShippingItem={id:string;order_number:number;buyer:string;order_status:string;shipping?:{
 recipient_name:string;phone:string;dni:string|null;department:string|null;province:string;district:string|null;carrier:string;agency_address:string;tracking_code:string|null;status:string}|null};
-export function ShipmentManager({orders}:{orders:ShippingItem[]}){
+export function ShipmentManager({orders,canViewDni}:{orders:ShippingItem[];canViewDni:boolean}){
  const [id,setId]=useState(orders[0]?.id||'');const item=orders.find(o=>o.id===id);const shipping=item?.shipping;
- const [form,setForm]=useState(()=>({recipient_name:orders[0]?.shipping?.recipient_name||orders[0]?.buyer||'',phone:orders[0]?.shipping?.phone||'',dni:orders[0]?.shipping?.dni||'',department:orders[0]?.shipping?.department||'',province:orders[0]?.shipping?.province||'',district:orders[0]?.shipping?.district||'',carrier:orders[0]?.shipping?.carrier||'shalom',agency_address:orders[0]?.shipping?.agency_address||''}));
+ const [form,setForm]=useState(()=>({recipient_name:orders[0]?.shipping?.recipient_name||orders[0]?.buyer||'',phone:orders[0]?.shipping?.phone||'',dni:canViewDni?orders[0]?.shipping?.dni||'':'',department:orders[0]?.shipping?.department||'',province:orders[0]?.shipping?.province||'',district:orders[0]?.shipping?.district||'',carrier:orders[0]?.shipping?.carrier||'shalom',agency_address:orders[0]?.shipping?.agency_address||''}));
  const [result,setResult]=useState<ActionResult|null>(null);const [busy,setBusy]=useState(false);const [tracking,setTracking]=useState('');
- function select(value:string){const o=orders.find(x=>x.id===value);setId(value);setResult(null);const s=o?.shipping;setForm({recipient_name:s?.recipient_name||o?.buyer||'',phone:s?.phone||'',dni:s?.dni||'',department:s?.department||'',province:s?.province||'',district:s?.district||'',carrier:s?.carrier||'shalom',agency_address:s?.agency_address||''});setTracking(s?.tracking_code||'');}
+ function select(value:string){const o=orders.find(x=>x.id===value);setId(value);setResult(null);const s=o?.shipping;setForm({recipient_name:s?.recipient_name||o?.buyer||'',phone:s?.phone||'',dni:canViewDni?s?.dni||'':'',department:s?.department||'',province:s?.province||'',district:s?.district||'',carrier:s?.carrier||'shalom',agency_address:s?.agency_address||''});setTracking(s?.tracking_code||'');}
  // El primer pedido se rellena al montar sin usar efectos para sobrescribir datos editados.
  const current=form;
  async function save(e:React.FormEvent){e.preventDefault();setBusy(true);const r=await shipmentAction({...current,order:id});setResult(r);setBusy(false);}
@@ -22,7 +22,7 @@ export function ShipmentManager({orders}:{orders:ShippingItem[]}){
  <form className="form-stack" onSubmit={save}>
  <div className="grid two"><label>Destinatario *<input required maxLength={120} value={current.recipient_name} onChange={e=>setForm({...current,recipient_name:e.target.value})}/></label>
  <label>Teléfono *<input required maxLength={30} value={current.phone} onChange={e=>setForm({...current,phone:e.target.value})}/></label></div>
- <div className="grid three"><label>DNI (solo si lo requiere la agencia)<input maxLength={15} value={current.dni} onChange={e=>setForm({...current,dni:e.target.value})}/></label>
+ <div className={canViewDni?'grid three':'grid two'}>{canViewDni&&<label>DNI (solo si lo requiere la agencia)<input maxLength={15} value={current.dni} onChange={e=>setForm({...current,dni:e.target.value})}/></label>}
  <label>Departamento<input maxLength={100} value={current.department} onChange={e=>setForm({...current,department:e.target.value})}/></label>
  <label>Provincia *<input required maxLength={100} value={current.province} onChange={e=>setForm({...current,province:e.target.value})}/></label></div>
  <div className="grid two"><label>Distrito<input maxLength={100} value={current.district} onChange={e=>setForm({...current,district:e.target.value})}/></label>
