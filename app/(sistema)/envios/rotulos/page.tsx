@@ -5,8 +5,9 @@ export default async function Rotulos({searchParams}:{searchParams:Promise<{ids?
  const includeDni=params.dni==='1'&&role==='admin';
  const ids=[...new Set(raw.split(',').filter(x=>/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(x)))].slice(0,30);
  if(!ids.length)return <p>Selecciona pedidos desde Envíos.</p>;
- const selection=includeDni?s.from('shipments').select('order_id,recipient_name,phone,dni,province,department,district,carrier,agency_address,tracking_code,orders(order_number)').in('order_id',ids):s.from('shipments').select('order_id,recipient_name,phone,province,department,district,carrier,agency_address,tracking_code,orders(order_number)').in('order_id',ids);
+ const selection=s.from('shipments').select('order_id,recipient_name,phone,province,department,district,carrier,agency_address,tracking_code,orders(order_number)').in('order_id',ids);
  const {data,error}=await selection;
  if(error)return <p>No se pudieron cargar los rótulos: {error.message}</p>;
- return <PrintLabels items={(data||[]).map(s=>({...s,dni:includeDni?(s as typeof s & {dni?:string|null}).dni||null:null,order_number:(s.orders as unknown as {order_number:number}|null)?.order_number||0}))} includeDni={includeDni}/>;
+ let dniByOrder=new Map<string,string|null>();if(includeDni){const {data:dniRows,error:dniError}=await s.rpc('admin_get_shipment_dni',{p_orders:ids});if(dniError)return <p>No se pudieron cargar los DNI autorizados. Verifica que la migración 007 esté aplicada.</p>;dniByOrder=new Map((dniRows||[]).map((row:{order_id:string;dni:string|null})=>[row.order_id,row.dni]));}
+ return <PrintLabels items={(data||[]).map(s=>({...s,dni:includeDni?dniByOrder.get(s.order_id)||null:null,order_number:(s.orders as unknown as {order_number:number}|null)?.order_number||0}))} includeDni={includeDni}/>;
 }
