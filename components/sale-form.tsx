@@ -11,7 +11,7 @@ export function SaleForm({variants,customers}:{variants:Variant[];customers:Cust
  const [channel,setChannel]=useState<'tiktok'|'whatsapp'|'directo'>('tiktok');const [mode,setMode]=useState<'reserve'|'paid'>('reserve');
  const [method,setMethod]=useState<'yape'|'plin'|'efectivo'|'transferencia'>('yape');const [minutes,setMinutes]=useState(45);
  const [working,setWorking]=useState(false);const [result,setResult]=useState<ActionResult|null>(null);
- const key=useRef<string|null>(null);const scannerRef=useRef<HTMLInputElement>(null);const searchSeq=useRef(0);
+ const key=useRef<string|null>(null);const scannerRef=useRef<HTMLInputElement>(null);const customerDetailsRef=useRef<HTMLDetailsElement>(null);const searchSeq=useRef(0);
  useEffect(()=>{const term=query.trim();const seq=++searchSeq.current;if(term.length<2){setMatches([]);setSearching(false);return;}const timer=setTimeout(async()=>{setSearching(true);const r=await searchSaleVariantsAction(term);if(seq===searchSeq.current){setMatches(r.variants.filter(v=>available(v)>0));setCatalog(prev=>{const byId=new Map(prev.map(v=>[v.id,v]));for(const v of r.variants)byId.set(v.id,v);return [...byId.values()];});setSearching(false);if(r.error)setResult({ok:false,error:r.error});}},220);return()=>clearTimeout(timer);},[query]);
  const current=matches.find(v=>v.id===variant);
  const total=cart.reduce((sum,l)=>sum+(catalog.find(v=>v.id===l.variant_id)?.sale_price||0)*l.quantity,0);
@@ -29,17 +29,19 @@ export function SaleForm({variants,customers}:{variants:Variant[];customers:Cust
   if((old?.quantity||0)+quantity>available(current)){setResult({ok:false,error:`Stock disponible: ${available(current)} unidades`});return;}
   setCart(xs=>old?xs.map(l=>l.variant_id===variant?{...l,quantity:l.quantity+quantity}:l):[...xs,{variant_id:variant,quantity}]);setResult(null);setVariant('');setQuantity(1);}
  async function submit(e:React.FormEvent){e.preventDefault();if(working||cart.length===0)return;
+  if(mode==='reserve'&&!buyer.trim()&&!handle.trim()&&!customer){setResult({ok:false,error:'Para reservar, identifica al comprador por nombre o cliente frecuente. El usuario de TikTok es opcional.'});if(customerDetailsRef.current)customerDetailsRef.current.open=true;return;}
   if(mode==='paid'&&!confirm('¿Ya comprobaste que recibiste el pago? Esto descontará el stock físico.'))return;
   setWorking(true);setResult(null);
   if(!key.current)key.current=crypto.randomUUID();
   const response=await createOrderAction({request_key:key.current,buyer,handle,customer_id:customer||null,channel,mode,method:mode==='paid'?method:null,minutes,lines:cart});
   setResult(response);setWorking(false);
-  if(response.ok){setCart([]);setBuyer('');setHandle('');setCustomer('');key.current=null;}
+  if(response.ok){setCart([]);setBuyer('');setHandle('');setCustomer('');if(customerDetailsRef.current)customerDetailsRef.current.open=false;key.current=null;}
  }
  return <section className="card sale-form"><div className="section-title"><h2>Nueva venta / reserva</h2><span className="pill blue">Registro rápido</span></div>
   <form onSubmit={submit} className="form-stack">
-   <div className="grid two"><label>Canal de venta<select value={channel} onChange={e=>setChannel(e.target.value as typeof channel)}><option value="tiktok">TikTok Live</option><option value="whatsapp">WhatsApp</option><option value="directo">Venta directa</option></select></label><label>Cliente frecuente (opcional)<select value={customer} onChange={e=>setCustomer(e.target.value)}><option value="">Sin cliente registrado</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name} {c.tiktok_handle||''}</option>)}</select></label></div>
-   <div className="grid two"><label>Nombre comprador<input value={buyer} onChange={e=>setBuyer(e.target.value)} placeholder="Nombre (opcional si hay usuario)"/></label><label>Usuario TikTok<input value={handle} onChange={e=>setHandle(e.target.value)} placeholder="@usuario"/></label></div>
+   <label>Canal de venta<select value={channel} onChange={e=>setChannel(e.target.value as typeof channel)}><option value="tiktok">TikTok Live</option><option value="whatsapp">WhatsApp</option><option value="directo">Venta directa</option></select></label>
+   <details ref={customerDetailsRef} className="sale-customer-details"><summary>Datos del comprador <span className="muted small">Opcionales en venta pagada</span></summary><p className="muted small">Para una reserva, selecciona un cliente o escribe un nombre. El usuario de TikTok es opcional.</p><label>Cliente frecuente<select value={customer} onChange={e=>setCustomer(e.target.value)}><option value="">Sin cliente registrado</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name} {c.tiktok_handle||''}</option>)}</select></label>
+   <div className="grid two"><label>Nombre comprador<input value={buyer} onChange={e=>setBuyer(e.target.value)} placeholder="Opcional"/></label><label>Usuario TikTok<input value={handle} onChange={e=>setHandle(e.target.value)} placeholder="Opcional: @usuario"/></label></div></details>
    <label>Escáner de código de barras (lector USB)<input ref={scannerRef} autoFocus value={scanCode} onChange={e=>setScanCode(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();void scan();}}} placeholder="Enfoca aquí y escanea" aria-label="Escanear código para agregar una unidad"/></label>
    <p className="muted small">Cada lectura suma 1 unidad al carrito y verifica el disponible. También puedes escribir un SKU manualmente. El escaneo todavía no confirma ninguna venta.</p>
    <label>Buscar por SKU, código, talla, color o nombre<input value={query} onChange={e=>{setQuery(e.target.value);setVariant('');}} placeholder="Ej. pantalón negro L"/></label>
