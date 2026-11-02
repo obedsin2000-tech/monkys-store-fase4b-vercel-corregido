@@ -17,6 +17,7 @@ export type Order = {
  channel:string; status:string; payment_status:string; payment_method:string|null;
  total:number; created_at:string; expires_at:string|null; customer_id:string|null;
  customers?:{phone:string|null}|null;
+ shipments?:{phone:string|null}|{phone:string|null}[]|null;
  order_lines?: Array<{id:string; quantity:number;unit_price:number;line_total:number; variants?:{sku:string;size:string;color:string; products?:{name:string}|null}|null}>;
 };
 export type Purchase = { id:string; reference:string|null;total:number;received_at:string; suppliers?:{name:string}|null; };

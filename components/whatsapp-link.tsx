@@ -10,6 +10,6 @@ function whatsappUrl(phone:string|null|undefined,message:string){
 
 export function WhatsAppLink({phone,message,label='Preparar WhatsApp'}:{phone:string|null|undefined;message:string;label?:string}){
  const href=whatsappUrl(phone,message);
- if(!href)return null;
+ if(!href)return <span className="muted small">Registra el teléfono del cliente para preparar el mensaje.</span>;
  return <a className="btn outline compact" href={href} target="_blank" rel="noreferrer">{label}</a>;
 }
