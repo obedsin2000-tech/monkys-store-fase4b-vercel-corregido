@@ -28,7 +28,7 @@ export default async function SecurityPage(){
  return <>
   <PageTitle title="Seguridad y respaldos" description="Diagnóstico de accesos, auditoría y recomendaciones de respaldo. Solo administradores."/>
   <div className="card security-banner"><ShieldCheck size={27}/><div>
-    <h2>Centro de seguridad · Fase 4A</h2>
+    <h2>Centro de seguridad · Fase 4B</h2>
     <p>Este panel consulta la configuración real de Supabase. No crea ni restaura respaldos desde el navegador.</p>
   </div></div>
   {error&&<div className="alert warn">No se pudo ejecutar el diagnóstico: {error.message}. Verifica las migraciones 004_fase4a.sql, 005_fase4b.sql y 006_fase4b_security_report.sql.</div>}
