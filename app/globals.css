@@ -72,3 +72,13 @@
 .queue-pagination{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:18px;color:var(--muted);font-size:.82rem}
 .disabled-link{pointer-events:none;opacity:.45}
 @media(max-width:720px){.queue-filters{grid-template-columns:1fr 1fr}.queue-filters label:first-child{grid-column:1/-1}.queue-filters .btn{padding:9px 11px}}
+
+/* Venta rápida: datos del cliente plegables para mantener el flujo principal limpio. */
+.sale-customer-details{border:1px solid #e3e9ee;border-radius:10px;background:#fafcfe;padding:0 14px}
+.sale-customer-details summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;padding:12px 0;color:#405b72;font-size:.84rem;font-weight:700}
+.sale-customer-details summary::-webkit-details-marker{display:none}
+.sale-customer-details summary::after{content:'+';margin-left:auto;color:var(--blue);font-size:1.15rem}
+.sale-customer-details[open] summary{border-bottom:1px solid #e7edf2;margin-bottom:12px}
+.sale-customer-details[open] summary::after{content:'−'}
+.sale-customer-details>p{margin-bottom:12px}
+.sale-customer-details>.grid{padding-bottom:14px}
