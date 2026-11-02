@@ -11,7 +11,7 @@ export default async function Envios({searchParams}:{searchParams:Promise<{q?:st
  s.from('shipments').select('id,order_id,recipient_name,phone,department,province,district,carrier,agency_address,tracking_code,status,updated_at').order('updated_at',{ascending:false}).limit(300)
  ]);
  let shipmentRows=(ships||[]).map(s=>({...s,dni:null as string|null}));
- if(role==='admin'&&shipmentRows.length){const {data:dniRows}=await s.rpc('admin_get_shipment_dni',{p_orders:shipmentRows.map(s=>s.order_id)});const dniByOrder=new Map((dniRows||[]).map((row:{order_id:string;dni:string|null})=>[row.order_id,row.dni]));shipmentRows=shipmentRows.map(s=>({...s,dni:dniByOrder.get(s.order_id)||null}));}
+ if(role==='admin'&&shipmentRows.length){const {data:dniRows}=await s.rpc('admin_get_shipment_dni',{p_orders:shipmentRows.map(s=>s.order_id)});const dniByOrder=new Map<string,string|null>((dniRows||[]).map((row:{order_id:string;dni:string|null})=>[row.order_id,row.dni] as const));shipmentRows=shipmentRows.map(s=>({...s,dni:dniByOrder.get(s.order_id)||null}));}
  const byOrder=new Map(shipmentRows.map(s=>[s.order_id,s]));const items:ShippingItem[]=(orders||[]).map(o=>({id:o.id,order_number:o.order_number,buyer:o.buyer_name||o.tiktok_handle||'Cliente',order_status:o.status,shipping:byOrder.get(o.id)||null}));
  const printIds=(ships||[]).filter(s=>s.status==='preparing'||s.status==='pending').map(s=>s.order_id).slice(0,30).join(',');
  const pages=Math.max(1,Math.ceil((count||0)/pageSize));const href=(p:number)=>`/envios?${new URLSearchParams({...(q?{q}:{}),...(estado?{estado}:{}),page:String(p)})}`;
