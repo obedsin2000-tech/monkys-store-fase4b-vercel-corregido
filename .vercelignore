@@ -2,7 +2,7 @@
 *.bat
 *.pdf
 *.xlsx
-supabase/
+/supabase/
 scripts/*.ps1
 *.zip
 # Los respaldos no deben salir del equipo
