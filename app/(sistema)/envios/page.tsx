@@ -24,19 +24,33 @@ export default async function Envios({searchParams}:{searchParams:Promise<{q?:st
   customerLookupError=error;
   matchingCustomerIds=(matchedCustomers||[]).map(customer=>customer.id);
  }
- let orderQuery=s.from('orders').select('id,order_number,buyer_name,tiktok_handle,status,customers(name),dispatch:shipments!left(status)',{count:'exact'}).eq('status','confirmed');
- const eligibleDispatch='dispatch.is.null,dispatch.status.in.(pending,preparing)';
+ const searchFilters=q?[`buyer_name.ilike.%${q}%`,`tiktok_handle.ilike.%${q}%`]:[];
  if(q){
-  const filters=[`buyer_name.ilike.%${q}%`,`tiktok_handle.ilike.%${q}%`];
   const numericSearch=q.replace(/^(pedido\s*)?#\s*/i,'').trim();
-  if(/^\d{1,15}$/.test(numericSearch))filters.push(`order_number.eq.${numericSearch}`);
-  if(matchingCustomerIds.length)filters.push(`customer_id.in.(${matchingCustomerIds.join(',')})`);
-  const search=`or(${filters.join(',')})`;
-  orderQuery=orderQuery.or(`and(dispatch.is.null,${search}),and(dispatch.status.in.(pending,preparing),${search})`);
- }else orderQuery=orderQuery.or(eligibleDispatch);
- const {data:orders,error:ordersError,count}=await orderQuery.order('created_at',{ascending:false}).range((page-1)*queuePageSize,page*queuePageSize-1);
-
- const orderIds=(orders||[]).map(o=>o.id);
+  if(/^\d{1,15}$/.test(numericSearch))searchFilters.push(`order_number.eq.${numericSearch}`);
+  if(matchingCustomerIds.length)searchFilters.push(`customer_id.in.(${matchingCustomerIds.join(',')})`);
+ }
+ type QueueOrder={id:string;order_number:number;buyer_name:string|null;tiktok_handle:string|null;status:string;customers:{name:string|null}|{name:string|null}[]|null};
+ const eligibleOrders:QueueOrder[]=[];let candidateOffset=0;let ordersError:Error|null=null;let queueShipmentError:Error|null=null;
+ // PostgREST no admite combinar .or() entre columnas de orders y shipments.
+ // Leemos pedidos confirmados por lotes y filtramos su estado logístico con una consulta aparte.
+ while(true){
+  let candidateQuery=s.from('orders').select('id,order_number,buyer_name,tiktok_handle,status,customers(name)',{count:'exact'}).eq('status','confirmed');
+  if(searchFilters.length)candidateQuery=candidateQuery.or(searchFilters.join(','));
+  const {data:candidates,error}=await candidateQuery.order('created_at',{ascending:false}).range(candidateOffset,candidateOffset+199);
+  if(error){ordersError=error;break;}
+  const batch=(candidates||[]) as QueueOrder[];
+  if(!batch.length)break;
+  const {data:shipmentsForBatch,error:shipmentLookupError}=await s.from('shipments').select('order_id,status').in('order_id',batch.map(order=>order.id));
+  if(shipmentLookupError){queueShipmentError=shipmentLookupError;break;}
+  const alreadyDispatched=new Set((shipmentsForBatch||[]).filter(shipment=>shipment.status==='dispatched'||shipment.status==='delivered').map(shipment=>shipment.order_id));
+  eligibleOrders.push(...batch.filter(order=>!alreadyDispatched.has(order.id)));
+  candidateOffset+=batch.length;
+  if(batch.length<200)break;
+ }
+ const count=eligibleOrders.length;
+ const orders=eligibleOrders.slice((page-1)*queuePageSize,page*queuePageSize);
+ const orderIds=orders.map(order=>order.id);
  const orderShipmentResult=orderIds.length
   ? await s.from('shipments').select('id,order_id,recipient_name,phone,department,province,district,carrier,agency_address,tracking_code,status,updated_at').in('order_id',orderIds)
   : {data:[],error:null};
@@ -69,7 +83,7 @@ export default async function Envios({searchParams}:{searchParams:Promise<{q?:st
  const clearShipmentsHref=`/envios?${new URLSearchParams({...(q?{q}:{}),page:String(page)})}`;
 
  return <><PageTitle title="Envíos y rótulos" description="Prepara los paquetes pagados y lleva un control claro de cada despacho."/>
- {(ordersError||shipmentsError||orderShipmentResult.error||customerLookupError)&&<div className="alert error">No se pudieron cargar todos los datos de envíos. Actualiza la página y vuelve a intentar.</div>}
+ {(ordersError||shipmentsError||queueShipmentError||orderShipmentResult.error||customerLookupError)&&<div className="alert error">No se pudieron cargar todos los datos de envíos. Actualiza la página y vuelve a intentar.</div>}
  <section className="card"><div className="section-title"><h2>Cola de pedidos para despacho</h2><span className="muted small">{count||0} resultados · Página {page} de {queuePages}</span></div>
  <p className="muted small">Solo pedidos pagados que aún no se despacharon. Los datos guardados se identifican en el selector.</p>
  <form method="get" className="queue-filters"><label>Buscar comprador o pedido<input name="q" defaultValue={q} placeholder="Nombre, teléfono, TikTok o # de pedido" maxLength={80}/></label>
