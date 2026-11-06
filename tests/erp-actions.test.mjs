@@ -9,7 +9,7 @@ function actions(file,role='admin'){
 const sale={request_key:id,buyer:'',handle:'',customer_id:null,channel:'directo',mode:'paid',method:'efectivo',minutes:45,lines:[{variant_id:id,quantity:1}]};
 
 test('Servidor: venta pagada sin comprador mantiene el comportamiento de venta rápida',async()=>{
- const a=actions('lib/actions.ts');assert.equal((await a.createOrderAction(sale)).ok,true);assert.equal(a.calls[0].payload.p_buyer,'Venta rápida sin identificar');
+ const a=actions('lib/actions.ts');assert.equal((await a.createOrderAction(sale)).ok,true);assert.equal(a.calls[0].payload.p_buyer,'Venta rápida sin identificar');assert.equal(a.calls[0].name,'create_order');
 });
 
 test('Servidor: reserva sin comprador, cantidades inválidas y líneas duplicadas se rechazan',async()=>{

@@ -172,3 +172,8 @@ fieldset{min-width:0}fieldset:disabled{opacity:.75}.form-footer{display:flex;ali
 
 .recipient-fields{grid-template-columns:minmax(0,1.8fr) minmax(0,1fr) minmax(0,1fr)}
 @media(max-width:680px){.recipient-fields{grid-template-columns:1fr}}
+
+/* Descuentos opcionales de Venta rápida */
+.cart-head{align-items:center;flex-wrap:wrap}.cart-head .link-btn{min-height:36px}.cart-line>.cart-line-price{flex:0 0 auto;align-items:flex-end;gap:4px;min-width:85px}.cart-line-price del{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}.line-discount{margin-top:9px;max-width:290px}.form-stack .line-discount input{max-width:160px;min-height:40px}.cart-summary{padding-top:14px;display:flex;flex-direction:column;gap:8px}.cart-summary>div{display:flex;justify-content:space-between;gap:12px;font-size:.8125rem;font-variant-numeric:tabular-nums}.cart-summary .discount-summary{color:var(--green)}.cart-summary .cart-total{font-size:.875rem;padding-top:8px}.cart-summary .cart-total strong{font-size:1.5rem}
+@media(max-width:480px){.cart-line:has(.line-discount){flex-wrap:wrap;align-items:flex-start}.cart-line:has(.line-discount)>div:first-child{flex-basis:calc(100% - 50px);order:0}.cart-line:has(.line-discount)>.mini-danger{order:1}.cart-line:has(.line-discount)>.cart-line-price{order:2;flex-basis:100%;align-items:flex-start;flex-direction:row;gap:12px}.cart-line:has(.line-discount)>.cart-line-price strong{margin-left:auto}}
+.order-discount{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;font-size:.8125rem;padding:10px 0;color:var(--muted);border-top:1px solid var(--line);font-variant-numeric:tabular-nums}.order-discount strong{color:var(--green);font-weight:650}

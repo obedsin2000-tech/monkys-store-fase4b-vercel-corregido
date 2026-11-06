@@ -90,3 +90,16 @@ test('Catálogo: venta rápida encuentra variantes por el código del producto v
  const action=load('lib/actions.ts',{'@/lib/auth':{requireUser:async()=>({supabase:mock.s})},'next/cache':{revalidatePath(){}}}).searchSaleVariantsAction;
  const result=await action('CODE-TEST');assert.equal(result.error,undefined);assert.equal(result.variants[0]?.id,'variant-a');
 });
+
+test('Página: pedidos muestran el descuento guardado y no lo inventan en ventas anteriores',async()=>{
+ for(const snapshot of [100,null,undefined]){
+  const row={...base,id:'order-discount',total:180,order_lines:[{id:'line-test',quantity:2,unit_price:90,line_total:180,catalog_unit_price:snapshot}]};
+  const mock=api({orders:[row]});
+  const Page=load('app/(sistema)/pedidos/page.tsx',{'@/lib/auth':{requireUser:async()=>({supabase:mock.s})},'@/components/order-actions':{OrderActions:()=>null}}).default;
+  const tree=await Page({searchParams:Promise.resolve({})});
+  const discounts=nodes(tree,n=>n.props?.className==='order-discount');assert.equal(discounts.length,snapshot===100?1:0);
+  if(snapshot===100)assert.ok(nodes(discounts[0],n=>n.type==='strong').some(n=>JSON.stringify(n.props.children).includes('20')));
+  // El comodín funciona también cuando la base aún no tiene la columna de 010.
+  assert.match(mock.requests.find(u=>u.pathname.endsWith('/orders')).searchParams.get('select'),/order_lines\(\*,variants\(/);
+ }
+});
