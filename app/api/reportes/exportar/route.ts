@@ -43,7 +43,7 @@ export async function GET(request:NextRequest){
   for(const row of records){const cleaned:Record<string,CsvCell>={};for(const col of columns){
     const value=row[col.key];cleaned[col.key]=typeof value==='string'?safeText(value):value;
    }ws.addRow(cleaned)}
-  const header=ws.getRow(1);header.font={bold:true,color:{argb:'FFFFFFFF'}};header.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF18354D'}};
+  const header=ws.getRow(1);header.font={bold:true,color:{argb:'FFFAFAFA'}};header.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF18181B'}};
   ws.autoFilter={from:{row:1,column:1},to:{row:Math.max(1,records.length+1),column:columns.length}};
   const content=await wb.xlsx.writeBuffer();
   return new NextResponse(new Uint8Array(content as ArrayBuffer),{headers:{...headers,'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}});
