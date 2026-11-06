@@ -5,5 +5,5 @@ export function PrintLabels({items,includeDni=false}:{items:Label[];includeDni?:
  <small>DESTINATARIO</small><h2>{s.recipient_name}</h2><p><b>Teléfono:</b> {s.phone}</p>{includeDni&&s.dni&&<p><b>DNI:</b> {s.dni}</p>}
  <p><b>Destino:</b> {[s.district,s.province,s.department].filter(Boolean).join(' · ')}</p><p><b>Agencia:</b> {s.carrier==='shalom'?'Shalom':'Otra agencia'}</p>
  <p><b>Dirección agencia:</b> {s.agency_address}</p>{s.tracking_code&&<p><b>Guía:</b> {s.tracking_code}</p>}
- </div>)}</div><style jsx global>{`@media print{.sidebar,.topbar,.no-print{display:none!important}.main-column{width:100%;margin:0}.main-content{width:100%;padding:0;margin:0}.labels-grid{display:block}.shipping-label{break-inside:avoid;page-break-inside:avoid;box-shadow:none;margin:0 0 10mm 0;min-height:72mm}.app-shell{display:block}}.shipping-label{font-size:14px;background:#fff;color:#111;border:2px solid #111;border-radius:6px;padding:18px 22px;max-width:150mm;margin-bottom:14px}.shipping-label header{display:flex;justify-content:space-between;gap:12px;align-items:center}.shipping-label small{letter-spacing:.12em;color:#555}.shipping-label h2{margin:6px 0 14px;font-size:22px}.shipping-label p{margin:6px 0}`}</style></>;
+ </div>)}</div></>;
 }

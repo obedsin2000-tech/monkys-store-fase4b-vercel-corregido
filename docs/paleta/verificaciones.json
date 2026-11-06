@@ -1,0 +1,1195 @@
+{
+  "base_commit": "f0c8ca776246694c74c0103afd0bcc4119dcfdad",
+  "datos": "Páginas reales con datos ficticios y transporte Supabase simulado. No se usa la base de producción.",
+  "responsive": [
+    {
+      "path": "panel",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "ventas",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "pedidos",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "productos",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "etiquetas",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "inventario/conteos",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "inventario",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "compras",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "clientes",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "cobros",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "envios",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "devoluciones",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "caja",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "reportes",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "reportes/inventario",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "reportes/proveedores",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "equipo",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "seguridad",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "ingresar",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "envios/rotulos?ids=00000000-0000-4000-8000-000000000302,00000000-0000-4000-8000-000000000303",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "path": "panel",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "ventas",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "pedidos",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "productos",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "etiquetas",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "inventario/conteos",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "inventario",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "compras",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "clientes",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "cobros",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "envios",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "devoluciones",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "caja",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "reportes",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "reportes/inventario",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "reportes/proveedores",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "equipo",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "seguridad",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "ingresar",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "envios/rotulos?ids=00000000-0000-4000-8000-000000000302,00000000-0000-4000-8000-000000000303",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "path": "panel",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "ventas",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "pedidos",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "productos",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "etiquetas",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "inventario/conteos",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "inventario",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "compras",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "clientes",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "cobros",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "envios",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "devoluciones",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "caja",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "reportes",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "reportes/inventario",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "reportes/proveedores",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "equipo",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "seguridad",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "ingresar",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "envios/rotulos?ids=00000000-0000-4000-8000-000000000302,00000000-0000-4000-8000-000000000303",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "path": "panel",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "ventas",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "pedidos",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "productos",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "etiquetas",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "inventario/conteos",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "inventario",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "compras",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "clientes",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "cobros",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "envios",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "devoluciones",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "caja",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "reportes",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "reportes/inventario",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "reportes/proveedores",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "equipo",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "seguridad",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "ingresar",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "envios/rotulos?ids=00000000-0000-4000-8000-000000000302,00000000-0000-4000-8000-000000000303",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "path": "panel",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "ventas",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "pedidos",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "productos",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "etiquetas",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "inventario/conteos",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "inventario",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "compras",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "clientes",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "cobros",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "envios",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "devoluciones",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "caja",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "reportes",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "reportes/inventario",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "reportes/proveedores",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "equipo",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "seguridad",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "ingresar",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "path": "envios/rotulos?ids=00000000-0000-4000-8000-000000000302,00000000-0000-4000-8000-000000000303",
+      "width": 320,
+      "overflow": false
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "panel",
+      "violations": [],
+      "passes": 23
+    },
+    {
+      "name": "ventas",
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "name": "pedidos",
+      "violations": [],
+      "passes": 24
+    },
+    {
+      "name": "productos",
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "name": "etiquetas",
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "name": "inventario/conteos",
+      "violations": [],
+      "passes": 25
+    },
+    {
+      "name": "inventario",
+      "violations": [],
+      "passes": 25
+    },
+    {
+      "name": "compras",
+      "violations": [],
+      "passes": 27
+    },
+    {
+      "name": "clientes",
+      "violations": [],
+      "passes": 25
+    },
+    {
+      "name": "cobros",
+      "violations": [],
+      "passes": 28
+    },
+    {
+      "name": "envios",
+      "violations": [],
+      "passes": 31
+    },
+    {
+      "name": "devoluciones",
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "name": "caja",
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "name": "reportes",
+      "violations": [],
+      "passes": 25
+    },
+    {
+      "name": "reportes/inventario",
+      "violations": [],
+      "passes": 25
+    },
+    {
+      "name": "reportes/proveedores",
+      "violations": [],
+      "passes": 25
+    },
+    {
+      "name": "equipo",
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "name": "seguridad",
+      "violations": [],
+      "passes": 23
+    },
+    {
+      "name": "ingresar",
+      "violations": [],
+      "passes": 20
+    },
+    {
+      "name": "envios/rotulos?ids=00000000-0000-4000-8000-000000000302,00000000-0000-4000-8000-000000000303",
+      "violations": [],
+      "passes": 22
+    },
+    {
+      "name": "menu-mobile",
+      "violations": [],
+      "passes": 22
+    },
+    {
+      "name": "error-campo-envio",
+      "violations": [],
+      "passes": 31
+    },
+    {
+      "name": "ingreso-error",
+      "violations": [],
+      "passes": 20
+    },
+    {
+      "name": "registro-exito",
+      "violations": [],
+      "passes": 20
+    }
+  ],
+  "interactions": [
+    {
+      "name": "Botón principal: hover, pulsación, foco y colores legibles",
+      "passed": true
+    },
+    {
+      "name": "La opción activa del menú tiene foco grafito visible sobre ámbar",
+      "passed": true
+    },
+    {
+      "name": "Filtros y menú desplegable conservan la navegación",
+      "passed": true
+    },
+    {
+      "name": "Venta y descuento mantienen sus importes y confirmación nativa",
+      "passed": true
+    },
+    {
+      "name": "Menú móvil conserva Tab, Escape y restauración de foco",
+      "passed": true
+    },
+    {
+      "name": "Errores locales y campo enfocado conservan su distinción",
+      "passed": true
+    },
+    {
+      "name": "Error de guardado conserva datos y semántica de alerta",
+      "passed": true
+    },
+    {
+      "name": "Éxito habilita el Paso 2 y conserva estados separados",
+      "passed": true
+    },
+    {
+      "name": "Vacío con texto legible y búsqueda disponible",
+      "passed": true
+    },
+    {
+      "name": "Fallo de consulta diferente de lista vacía",
+      "passed": true
+    },
+    {
+      "name": "Carga visible y anunciada",
+      "passed": true
+    },
+    {
+      "name": "Preferencia de movimiento reducido respetada",
+      "passed": true
+    },
+    {
+      "name": "Los cuatro estados usan exactamente sus colores semánticos",
+      "passed": true
+    },
+    {
+      "name": "Ingreso fallido se anuncia como error y usa rojo semántico",
+      "passed": true
+    },
+    {
+      "name": "Solicitud de cuenta exitosa se anuncia como éxito y usa verde semántico",
+      "passed": true
+    },
+    {
+      "name": "Filas de etiquetas seleccionadas identificadas sin cambiar cantidades",
+      "passed": true
+    },
+    {
+      "name": "Excel conserva datos y formato con cabecera grafito",
+      "passed": true
+    }
+  ],
+  "contrast": [
+    {
+      "name": "Texto",
+      "fg": "#18181B",
+      "bg": "#FFFFFF",
+      "ratio": 17.72
+    },
+    {
+      "name": "Secundario",
+      "fg": "#52525B",
+      "bg": "#F6F7F9",
+      "ratio": 7.21
+    },
+    {
+      "name": "Menú",
+      "fg": "#FAFAFA",
+      "bg": "#18181B",
+      "ratio": 16.97
+    },
+    {
+      "name": "Iconos menú",
+      "fg": "#B8B8C1",
+      "bg": "#18181B",
+      "ratio": 9
+    },
+    {
+      "name": "Principal",
+      "fg": "#18181B",
+      "bg": "#F4B544",
+      "ratio": 9.74
+    },
+    {
+      "name": "Enlace",
+      "fg": "#765014",
+      "bg": "#FFFFFF",
+      "ratio": 7.17
+    },
+    {
+      "name": "Éxito",
+      "fg": "#047857",
+      "bg": "#ECFDF5",
+      "ratio": 5.21
+    },
+    {
+      "name": "Información",
+      "fg": "#1D4ED8",
+      "bg": "#EFF6FF",
+      "ratio": 6.16
+    },
+    {
+      "name": "Advertencia",
+      "fg": "#92400E",
+      "bg": "#FFFBEB",
+      "ratio": 6.84
+    },
+    {
+      "name": "Error",
+      "fg": "#B91C1C",
+      "bg": "#FEF2F2",
+      "ratio": 5.91
+    }
+  ],
+  "colors": [
+    {
+      "path": "panel",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": null,
+      "primaryBg": null,
+      "primaryText": null,
+      "link": "#765014"
+    },
+    {
+      "path": "ventas",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": null,
+      "primaryText": null,
+      "link": null
+    },
+    {
+      "path": "pedidos",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": "#765014"
+    },
+    {
+      "path": "productos",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#18181B",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "etiquetas",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": null,
+      "primaryText": null,
+      "link": null
+    },
+    {
+      "path": "inventario/conteos",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "inventario",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "compras",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": null,
+      "primaryText": null,
+      "link": null
+    },
+    {
+      "path": "clientes",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": null,
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "cobros",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "envios",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": "#765014"
+    },
+    {
+      "path": "devoluciones",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "caja",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": null,
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "reportes",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": null,
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "reportes/inventario",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": null,
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "reportes/proveedores",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": null,
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "equipo",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#E4E4E7",
+      "heading": "#18181B",
+      "muted": null,
+      "primaryBg": null,
+      "primaryText": null,
+      "link": null
+    },
+    {
+      "path": "seguridad",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": "#FFFFFF",
+      "cardBorder": "#C6D3F5",
+      "heading": "#18181B",
+      "muted": null,
+      "primaryBg": null,
+      "primaryText": null,
+      "link": null
+    },
+    {
+      "path": "ingresar",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": null,
+      "sidebarText": null,
+      "sidebarIcon": null,
+      "selectedBg": null,
+      "selectedText": null,
+      "cardBg": null,
+      "cardBorder": null,
+      "heading": "#18181B",
+      "muted": "#52525B",
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    },
+    {
+      "path": "envios/rotulos?ids=00000000-0000-4000-8000-000000000302,00000000-0000-4000-8000-000000000303",
+      "bodyBg": "#F6F7F9",
+      "bodyText": "#18181B",
+      "sidebarBg": "#18181B",
+      "sidebarText": "#FAFAFA",
+      "sidebarIcon": "#B8B8C1",
+      "selectedBg": "#F4B544",
+      "selectedText": "#18181B",
+      "cardBg": null,
+      "cardBorder": null,
+      "heading": "#18181B",
+      "muted": null,
+      "primaryBg": "#F4B544",
+      "primaryText": "#18181B",
+      "link": null
+    }
+  ],
+  "print": [
+    {
+      "kind": "shipping",
+      "sidebarHidden": true,
+      "toolbarHidden": true,
+      "boxes": [
+        {
+          "w": 566.921875,
+          "h": 272.125,
+          "font": "14px",
+          "padding": "18px 22px",
+          "border": "2px"
+        },
+        {
+          "w": 566.921875,
+          "h": 272.125,
+          "font": "14px",
+          "padding": "18px 22px",
+          "border": "2px"
+        }
+      ]
+    },
+    {
+      "kind": "barcode",
+      "format": "50x30",
+      "w": 188.96875,
+      "h": 113.375,
+      "bars": 35,
+      "viewBox": "0 0 143 58",
+      "fill": [
+        "white",
+        "black"
+      ]
+    },
+    {
+      "kind": "barcode",
+      "format": "40x25",
+      "w": 151.171875,
+      "h": 94.484375,
+      "bars": 35,
+      "viewBox": "0 0 143 58",
+      "fill": [
+        "white",
+        "black"
+      ]
+    }
+  ],
+  "print_matches_previous_version": true,
+  "additional_print_checks": [
+    {
+      "name": "Filas de etiquetas seleccionadas identificadas sin cambiar cantidades",
+      "passed": true
+    },
+    {
+      "name": "Excel conserva datos y formato con cabecera grafito",
+      "passed": true
+    }
+  ],
+  "javascript_errors": [],
+  "css_tokens": {
+    "undefined": [],
+    "literal_colors_outside_root": 0
+  },
+  "baseline_contrast_issues": [
+    {
+      "screen": "etiquetas",
+      "elements": 16
+    },
+    {
+      "screen": "inventario/conteos",
+      "elements": 4
+    },
+    {
+      "screen": "reportes",
+      "elements": 21
+    },
+    {
+      "screen": "reportes/inventario",
+      "elements": 3
+    },
+    {
+      "screen": "reportes/proveedores",
+      "elements": 3
+    },
+    {
+      "screen": "equipo",
+      "elements": 7
+    },
+    {
+      "screen": "seguridad",
+      "elements": 8
+    }
+  ]
+}
