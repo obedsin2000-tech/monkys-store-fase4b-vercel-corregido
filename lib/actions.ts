@@ -12,7 +12,7 @@ const uuid=z.string().uuid();
 const itemSchema=z.object({product_code:text(40),name:text(120),category:z.string().trim().max(80).default(''),brand:z.string().trim().max(80).default(''),sku:text(60),size:z.string().trim().max(30).default('Única'),color:z.string().trim().max(40).default('Único'),sale_price:price,cost:price,initial_stock:nonneg,min_stock:nonneg});
 const variantSchema=itemSchema.omit({product_code:true,name:true,category:true,brand:true}).extend({product_id:uuid});
 const rowsSchema=z.array(itemSchema.omit({brand:true})).min(1).max(500);
-const purchaseSchema=z.object({supplier_id:uuid.nullable(),reference:z.string().trim().max(80),lines:z.array(z.object({variant_id:uuid,quantity:z.coerce.number().int().positive().max(100000),unit_cost:price})).min(1).max(100)});
+const purchaseSchema=z.object({request_key:uuid,supplier_id:uuid.nullable(),reference:z.string().trim().max(80),lines:z.array(z.object({variant_id:uuid,quantity:z.coerce.number().int().positive().max(100000),unit_cost:price})).min(1).max(100)});
 const orderSchema=z.object({request_key:uuid,buyer:z.string().trim().max(120),handle:z.string().trim().max(80),customer_id:uuid.nullable(),channel:z.enum(['tiktok','whatsapp','directo']),mode:z.enum(['reserve','paid']),method:z.enum(['efectivo','yape','plin','transferencia']).nullable(),minutes:z.number().int().min(5).max(720),lines:z.array(z.object({variant_id:uuid,quantity:z.number().int().min(1).max(1000)})).min(1).max(50)});
 function err(e:unknown):ActionResult{return {ok:false,error:e instanceof Error?e.message:'Error inesperado. Intenta nuevamente.'};}
 function changed(){['/panel','/productos','/inventario','/compras','/ventas','/pedidos','/clientes'].forEach(p=>revalidatePath(p));}
@@ -22,11 +22,11 @@ export async function searchSaleVariantsAction(term:string):Promise<{variants:Va
  try{
   const q=z.string().trim().min(2).max(80).parse(term).replace(/[,%()_*\\]/g,' ').trim();if(q.length<2)return {variants:[]};
   const {supabase:s}=await requireUser();const pattern=`%${q}%`;
-  const [{data:matches,error},{data:products}]=await Promise.all([
+  const [{data:matches,error},{data:products,error:productsError}]=await Promise.all([
    s.from('variants').select('*,products(name,product_code)').eq('active',true).or(`sku.ilike.${pattern},barcode.ilike.${pattern},size.ilike.${pattern},color.ilike.${pattern}`).order('sku').limit(50),
-   s.from('products').select('id').eq('active',true).ilike('name',pattern).limit(50)
+   s.from('products').select('id').eq('active',true).or(`name.ilike.${pattern},product_code.ilike.${pattern}`).limit(50)
   ]);
-  if(error)throw new Error(error.message);let results=(matches||[]) as unknown as Variant[];
+  if(error||productsError)throw new Error((error||productsError)!.message);let results=(matches||[]) as unknown as Variant[];
   const ids=(products||[]).map(p=>p.id);if(ids.length){const {data,error:productError}=await s.from('variants').select('*,products(name,product_code)').eq('active',true).in('product_id',ids).order('sku').limit(50);if(productError)throw new Error(productError.message);const byId=new Map(results.map(v=>[v.id,v]));for(const v of (data||[]) as unknown as Variant[])byId.set(v.id,v);results=[...byId.values()].slice(0,50);}
   return {variants:results};
  }catch(e){return {variants:[],error:e instanceof Error?e.message:'No se pudo buscar el catálogo.'};}
@@ -51,7 +51,7 @@ export async function adjustStockAction(input:unknown):Promise<ActionResult>{
 }
 export async function receivePurchaseAction(input:unknown):Promise<ActionResult>{
  try{const d=purchaseSchema.parse(input);const skuSet=new Set(d.lines.map(x=>x.variant_id));if(skuSet.size!==d.lines.length)throw new Error('No agregues el mismo SKU dos veces');
- const s=await ensureAdmin();const {data:id,error}=await s.rpc('receive_purchase',{p_supplier:d.supplier_id,p_reference:d.reference,p_lines:d.lines});if(error)throw new Error(error.message);changed();return {ok:true,message:'Compra recibida: inventario y Kardex actualizados.',id};}catch(e){return err(e);}
+ const s=await ensureAdmin();const {data:id,error}=await s.rpc('receive_purchase_once',{p_key:d.request_key,p_supplier:d.supplier_id,p_reference:d.reference,p_lines:d.lines});if(error)throw new Error(error.code==='PGRST202'?'Falta aplicar la migración 009 antes de registrar recepciones.':error.message);changed();return {ok:true,message:'Compra recibida: inventario y Kardex actualizados.',id};}catch(e){return err(e);}
 }
 export async function createOrderAction(input:unknown):Promise<ActionResult>{
  try{const d=orderSchema.parse(input);if(d.mode==='reserve'&&!d.buyer&&!d.handle&&!d.customer_id)throw new Error('Para reservar, identifica al comprador por nombre o cliente frecuente. El usuario de TikTok es opcional.');

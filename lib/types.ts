@@ -16,7 +16,7 @@ export type Order = {
  id:string; order_number:number; buyer_name:string|null; tiktok_handle:string|null;
  channel:string; status:string; payment_status:string; payment_method:string|null;
  total:number; created_at:string; expires_at:string|null; customer_id:string|null;
- customers?:{phone:string|null}|null;
+ customers?:{name?:string;phone:string|null}|null;
  shipments?:{phone:string|null}|{phone:string|null}[]|null;
  order_lines?: Array<{id:string; quantity:number;unit_price:number;line_total:number; variants?:{sku:string;size:string;color:string; products?:{name:string}|null}|null}>;
 };
