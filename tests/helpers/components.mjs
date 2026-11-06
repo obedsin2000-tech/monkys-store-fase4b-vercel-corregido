@@ -15,7 +15,7 @@ export function load(relative,mocks={}){
   '@/components/whatsapp-link':{WhatsAppLink:props=>React.createElement('whatsapp',props)},
   '@/lib/types':{money:n=>`S/ ${n}`,available:v=>v.on_hand-v.reserved-v.blocked,dateTime:v=>String(v)}
  };
- new Function('require','module','exports',compiled)(id=>id in mocks?mocks[id]:id in defaults?defaults[id]:require(id),module,module.exports);
+ new Function('require','module','exports',compiled)(id=>{if(id in mocks)return mocks[id];if(id in defaults)return defaults[id];if(id.startsWith('@/')){const file=['.tsx','.ts'].map(ext=>id.slice(2)+ext).find(relative=>fs.existsSync(new URL('../../'+relative,import.meta.url)));if(file)return load(file,mocks);}return require(id);},module,module.exports);
  return module.exports;
 }
 export function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no});return {promise,resolve,reject};}

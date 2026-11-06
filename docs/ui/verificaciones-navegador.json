@@ -1,0 +1,261 @@
+{
+  "responsive": [
+    {
+      "screen": "productos",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "screen": "inventario",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "screen": "pedidos",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "screen": "cobros",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "screen": "envios",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "screen": "ventas",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "screen": "productos",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "screen": "inventario",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "screen": "pedidos",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "screen": "cobros",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "screen": "envios",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "screen": "ventas",
+      "width": 1366,
+      "overflow": false
+    },
+    {
+      "screen": "productos",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "screen": "inventario",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "screen": "pedidos",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "screen": "cobros",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "screen": "envios",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "screen": "ventas",
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "screen": "productos",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "screen": "inventario",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "screen": "pedidos",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "screen": "cobros",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "screen": "envios",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "screen": "ventas",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "screen": "productos",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "screen": "inventario",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "screen": "pedidos",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "screen": "cobros",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "screen": "envios",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "screen": "ventas",
+      "width": 320,
+      "overflow": false
+    }
+  ],
+  "interactions": [
+    {
+      "name": "El catálogo y su búsqueda aparecen en el primer viewport",
+      "passed": true
+    },
+    {
+      "name": "Filtro de catálogo visible y limpieza de búsqueda",
+      "passed": true
+    },
+    {
+      "name": "Registro de producto accesible sin desplazar siempre el catálogo",
+      "passed": true
+    },
+    {
+      "name": "Menú móvil: foco contenido, Escape y restauración del foco",
+      "passed": true
+    },
+    {
+      "name": "Paso 2 oculto mientras no se guardaron los datos",
+      "passed": true
+    },
+    {
+      "name": "Errores de campos obligatorios en español junto al control",
+      "passed": true
+    },
+    {
+      "name": "Fallo de guardado: se comunica el error y se conserva lo escrito",
+      "passed": true
+    },
+    {
+      "name": "Guardado habilita Paso 2 y diferencia datos de despacho",
+      "passed": true
+    },
+    {
+      "name": "Ediciones sin guardar se distinguen y no permiten despachar datos anteriores",
+      "passed": true
+    },
+    {
+      "name": "Despacho simulado conserva el paquete en su historial",
+      "passed": true
+    },
+    {
+      "name": "Cobros distinguen total, pagado y saldo; el importe inválido tiene ayuda local",
+      "passed": true
+    },
+    {
+      "name": "Cambiar de pedido limpia los avisos del importe anterior",
+      "passed": true
+    },
+    {
+      "name": "Lista vacía muestra una explicación; conserva la búsqueda",
+      "passed": true
+    },
+    {
+      "name": "Error de consulta no se presenta como catálogo vacío",
+      "passed": true
+    },
+    {
+      "name": "Carga anuncia información pendiente sin cifras inventadas",
+      "passed": true
+    }
+  ],
+  "accessibility": [
+    {
+      "screen": "productos",
+      "width": 1440,
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "screen": "inventario",
+      "width": 1440,
+      "violations": [],
+      "passes": 25
+    },
+    {
+      "screen": "pedidos",
+      "width": 1440,
+      "violations": [],
+      "passes": 24
+    },
+    {
+      "screen": "cobros",
+      "width": 1440,
+      "violations": [],
+      "passes": 28
+    },
+    {
+      "screen": "envios",
+      "width": 1440,
+      "violations": [],
+      "passes": 31
+    },
+    {
+      "screen": "ventas",
+      "width": 1440,
+      "violations": [],
+      "passes": 26
+    },
+    {
+      "screen": "menu-mobile",
+      "width": 390,
+      "violations": [],
+      "passes": 22
+    }
+  ],
+  "errors": []
+}
