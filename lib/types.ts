@@ -18,7 +18,7 @@ export type Order = {
  total:number; created_at:string; expires_at:string|null; customer_id:string|null;
  customers?:{name?:string;phone:string|null}|null;
  shipments?:{phone:string|null}|{phone:string|null}[]|null;
- order_lines?: Array<{id:string; quantity:number;unit_price:number;line_total:number; variants?:{sku:string;size:string;color:string; products?:{name:string}|null}|null}>;
+ order_lines?: Array<{id:string; quantity:number;unit_price:number;catalog_unit_price?:number|null;line_total:number; variants?:{sku:string;size:string;color:string; products?:{name:string}|null}|null}>;
 };
 export type Purchase = { id:string; reference:string|null;total:number;received_at:string; suppliers?:{name:string}|null; };
 export type StockMovement = {id:number;created_at:string;movement_type:string;quantity_delta:number;balance_after:number;notes:string|null; variants?:{sku:string;products?:{name:string}|null}|null};

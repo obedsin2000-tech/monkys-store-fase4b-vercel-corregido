@@ -4,6 +4,7 @@ import {z} from 'zod';
 import ExcelJS from 'exceljs';
 import {requireUser} from '@/lib/auth';
 import type {ActionResult,Variant} from '@/lib/types';
+import {moneyCents} from '@/lib/sale-totals';
 
 const text=(max=120)=>z.string().trim().min(2,'Ingresa al menos 2 caracteres').max(max);
 const price=z.coerce.number().finite().min(0).max(999999999);
@@ -13,7 +14,8 @@ const itemSchema=z.object({product_code:text(40),name:text(120),category:z.strin
 const variantSchema=itemSchema.omit({product_code:true,name:true,category:true,brand:true}).extend({product_id:uuid});
 const rowsSchema=z.array(itemSchema.omit({brand:true})).min(1).max(500);
 const purchaseSchema=z.object({request_key:uuid,supplier_id:uuid.nullable(),reference:z.string().trim().max(80),lines:z.array(z.object({variant_id:uuid,quantity:z.coerce.number().int().positive().max(100000),unit_cost:price})).min(1).max(100)});
-const orderSchema=z.object({request_key:uuid,buyer:z.string().trim().max(120),handle:z.string().trim().max(80),customer_id:uuid.nullable(),channel:z.enum(['tiktok','whatsapp','directo']),mode:z.enum(['reserve','paid']),method:z.enum(['efectivo','yape','plin','transferencia']).nullable(),minutes:z.number().int().min(5).max(720),lines:z.array(z.object({variant_id:uuid,quantity:z.number().int().min(1).max(1000)})).min(1).max(50)});
+const orderMoney=z.number().finite().min(0).max(999999999).refine(n=>moneyCents(n)!==null,'Usa importes con hasta dos decimales');
+const orderSchema=z.object({request_key:uuid,buyer:z.string().trim().max(120),handle:z.string().trim().max(80),customer_id:uuid.nullable(),channel:z.enum(['tiktok','whatsapp','directo']),mode:z.enum(['reserve','paid']),method:z.enum(['efectivo','yape','plin','transferencia']).nullable(),minutes:z.number().int().min(5).max(720),lines:z.array(z.object({variant_id:uuid,quantity:z.number().int().min(1).max(1000),unit_discount:orderMoney.default(0),expected_unit_price:orderMoney.optional()})).min(1).max(50)});
 function err(e:unknown):ActionResult{return {ok:false,error:e instanceof Error?e.message:'Error inesperado. Intenta nuevamente.'};}
 function changed(){['/panel','/productos','/inventario','/compras','/ventas','/pedidos','/clientes'].forEach(p=>revalidatePath(p));}
 async function ensureAdmin(){const auth=await requireUser();if(auth.role!=='admin')throw new Error('Esta operación requiere ser administrador');return auth.supabase;}
@@ -57,8 +59,9 @@ export async function createOrderAction(input:unknown):Promise<ActionResult>{
  try{const d=orderSchema.parse(input);if(d.mode==='reserve'&&!d.buyer&&!d.handle&&!d.customer_id)throw new Error('Para reservar, identifica al comprador por nombre o cliente frecuente. El usuario de TikTok es opcional.');
  if(d.mode==='paid'&&!d.method)throw new Error('Selecciona un medio de pago previamente verificado');
  const set=new Set(d.lines.map(x=>x.variant_id));if(set.size!==d.lines.length)throw new Error('El carrito contiene SKUs duplicados');
- const {supabase:s}=await requireUser();const {data:id,error}=await s.rpc('create_order',{p_key:d.request_key,p_buyer:d.buyer||(!d.handle&&!d.customer_id?'Venta rápida sin identificar':''),p_handle:d.handle,p_customer:d.customer_id,p_channel:d.channel,p_mode:d.mode,p_method:d.method,p_minutes:d.minutes,p_lines:d.lines});
- if(error)throw new Error(error.message);changed();return {ok:true,message:d.mode==='reserve'?'Pedido reservado correctamente.':'Venta confirmada y stock descontado.',id};
+ const discounted=d.lines.some(line=>line.unit_discount>0);
+ const {supabase:s}=await requireUser();const {data:id,error}=await s.rpc(discounted?'create_order_with_discounts':'create_order',{p_key:d.request_key,p_buyer:d.buyer||(!d.handle&&!d.customer_id?'Venta rápida sin identificar':''),p_handle:d.handle,p_customer:d.customer_id,p_channel:d.channel,p_mode:d.mode,p_method:d.method,p_minutes:d.minutes,p_lines:d.lines});
+ if(error)throw new Error(discounted&&error.code==='PGRST202'?'Para usar descuentos, aplica primero 010_descuentos_venta.sql en Supabase. No se registró la venta.':error.message);changed();return {ok:true,message:d.mode==='reserve'?'Pedido reservado correctamente.':'Venta confirmada y stock descontado.',id};
  }catch(e){return err(e);}
 }
 export async function confirmReservationAction(orderId:string,method:string):Promise<ActionResult>{

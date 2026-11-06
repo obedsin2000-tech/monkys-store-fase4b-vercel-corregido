@@ -1,0 +1,77 @@
+{
+  "interactions": [
+    {
+      "name": "Campos de descuento ocultos antes de solicitarlos",
+      "passed": true
+    },
+    {
+      "name": "Escanear otra unidad conserva el descuento y lo multiplica por cantidad",
+      "passed": true
+    },
+    {
+      "name": "Descuento superior al precio muestra un error y bloquea la confirmación",
+      "passed": true
+    },
+    {
+      "name": "Descuento con tres decimales no se redondea silenciosamente",
+      "passed": true
+    },
+    {
+      "name": "Quitar descuentos restaura el subtotal sin quitar prendas",
+      "passed": true
+    },
+    {
+      "name": "Base sin migración: no guarda una venta a precio completo y conserva el descuento",
+      "passed": true
+    },
+    {
+      "name": "Fallo de guardado: libera el formulario y conserva prendas y descuento",
+      "passed": true
+    },
+    {
+      "name": "Guardado simulado correcto: limpia las prendas y oculta el descuento",
+      "passed": true
+    },
+    {
+      "name": "Pedidos muestra el descuento guardado y el precio final por unidad",
+      "passed": true
+    }
+  ],
+  "responsive": [
+    {
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "width": 834,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "overflow": false
+    }
+  ],
+  "a11y": [
+    {
+      "width": 1440,
+      "violations": []
+    },
+    {
+      "width": 834,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ],
+  "errors": []
+}
