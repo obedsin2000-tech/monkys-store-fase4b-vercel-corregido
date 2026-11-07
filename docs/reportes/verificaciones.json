@@ -1,0 +1,208 @@
+{
+  "responsive": [
+    {
+      "screen": "ventas",
+      "width": 1440,
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "screen": "inventario",
+      "width": 1440,
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "screen": "proveedores",
+      "width": 1440,
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "screen": "ventas",
+      "width": 1366,
+      "viewport": 1366,
+      "document": 1366
+    },
+    {
+      "screen": "inventario",
+      "width": 1366,
+      "viewport": 1366,
+      "document": 1366
+    },
+    {
+      "screen": "proveedores",
+      "width": 1366,
+      "viewport": 1366,
+      "document": 1366
+    },
+    {
+      "screen": "ventas",
+      "width": 834,
+      "viewport": 834,
+      "document": 834
+    },
+    {
+      "screen": "inventario",
+      "width": 834,
+      "viewport": 834,
+      "document": 834
+    },
+    {
+      "screen": "proveedores",
+      "width": 834,
+      "viewport": 834,
+      "document": 834
+    },
+    {
+      "screen": "ventas",
+      "width": 390,
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "screen": "inventario",
+      "width": 390,
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "screen": "proveedores",
+      "width": 390,
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "screen": "ventas",
+      "width": 320,
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "screen": "inventario",
+      "width": 320,
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "screen": "proveedores",
+      "width": 320,
+      "viewport": 320,
+      "document": 320
+    }
+  ],
+  "accessibility": [
+    {
+      "screen": "ventas",
+      "width": 1440,
+      "violations": [],
+      "passes": 30
+    },
+    {
+      "screen": "inventario",
+      "width": 1440,
+      "violations": [],
+      "passes": 27
+    },
+    {
+      "screen": "proveedores",
+      "width": 1440,
+      "violations": [],
+      "passes": 27
+    },
+    {
+      "screen": "ventas",
+      "width": 390,
+      "violations": [],
+      "passes": 30
+    },
+    {
+      "screen": "inventario",
+      "width": 390,
+      "violations": [],
+      "passes": 27
+    },
+    {
+      "screen": "proveedores",
+      "width": 390,
+      "violations": [],
+      "passes": 27
+    }
+  ],
+  "checks": [
+    {
+      "name": "Cuatro indicadores principales, con período, fórmulas y comparación",
+      "passed": true
+    },
+    {
+      "name": "Gráfico accesible: flechas, importes y enlaces distintos para ventas y cobros",
+      "passed": true
+    },
+    {
+      "name": "Detalle de ventas netas concilia con tarjeta y conserva el corte",
+      "passed": true
+    },
+    {
+      "name": "CSV y Excel incluyen todas las páginas y el mismo total del detalle",
+      "passed": true
+    },
+    {
+      "name": "Búsqueda del detalle mantiene total de contexto y muestra total filtrado",
+      "passed": true
+    },
+    {
+      "name": "Inventario distingue existencias actuales, sin ventas y rotación no disponible",
+      "passed": true
+    },
+    {
+      "name": "Proveedores incluyen compras sin asignar y explican que no hay saldos",
+      "passed": true
+    },
+    {
+      "name": "Un año completo se agrupa en meses sin perder el inicio del rango",
+      "passed": true
+    },
+    {
+      "name": "Rango intermedio se agrupa en intervalos de siete días",
+      "passed": true
+    },
+    {
+      "name": "Orden de canales se conserva en la exportación",
+      "passed": true
+    },
+    {
+      "name": "Detalle de utilidad expone costo histórico y costo recuperado",
+      "passed": true
+    },
+    {
+      "name": "Selección táctil del gráfico y tabla alternativa funcionan en celular",
+      "passed": true
+    },
+    {
+      "name": "Período vacío muestra días cero y explica comparación sin base",
+      "passed": true
+    },
+    {
+      "name": "Error de conexión no se presenta como ausencia de actividad",
+      "passed": true
+    },
+    {
+      "name": "Sin SQL 011 los reportes anteriores permanecen disponibles",
+      "passed": true
+    },
+    {
+      "name": "Operador no ve cifras ni exportaciones financieras",
+      "passed": true
+    },
+    {
+      "name": "Al aplicar filtros se ocultan cifras antiguas durante la consulta",
+      "passed": true
+    },
+    {
+      "name": "Impresión/PDF conserva período y totales",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "fixture": "Pruebas ficticias calculadas por las migraciones SQL reales en PGlite; sin acceso a producción."
+}
