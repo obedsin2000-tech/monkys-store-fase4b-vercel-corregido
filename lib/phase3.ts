@@ -1,4 +1,6 @@
 import {requireUser} from '@/lib/auth';
+import {cache} from 'react';
+export const requireReportUser=cache(requireUser);
 
 export const reportSections = ['overview','daily','channels','products','inventory','suppliers'] as const;
 export type ReportSection = typeof reportSections[number];
@@ -42,7 +44,7 @@ export function parseSection(s:string):ReportSection{
  return s as ReportSection;
 }
 export async function fetchPhase3Report(section:ReportSection,period:Period):Promise<ReportData>{
- const {supabase,role}=await requireUser();
+ const {supabase,role}=await requireReportUser();
  if(role!=='admin')throw Error('Los reportes financieros requieren permisos de administrador.');
  const {data,error}=await supabase.rpc('report_phase3',{
   p_start:period.start,p_end:period.end,p_section:section
