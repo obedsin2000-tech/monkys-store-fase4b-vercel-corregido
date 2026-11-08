@@ -2,7 +2,7 @@ export type Variant = {
  id: string; sku: string; barcode?: string; size: string; color: string;
  sale_price: number; avg_cost: number; on_hand: number; reserved: number;
  blocked: number; min_stock: number; active: boolean; product_id: string;
- products?: {name: string; product_code: string} | null;
+ products?: {name: string; product_code: string; reference_photo_id?: string | null} | null;
 };
 export type Product = {
  id: string; product_code: string; name: string; brand?: string | null;
