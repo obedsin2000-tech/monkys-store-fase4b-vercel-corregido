@@ -14,7 +14,21 @@ export async function database({through='999'}={}){
  CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$
    SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid
  $$;
- GRANT USAGE ON SCHEMA auth TO anon,authenticated;`);
+ GRANT USAGE ON SCHEMA auth TO anon,authenticated;
+ -- Metadatos de Storage para probar las políticas. Los archivos se prueban en el adaptador de la API.
+ CREATE SCHEMA storage;
+ CREATE TABLE storage.buckets(
+   id text PRIMARY KEY, name text NOT NULL, public boolean NOT NULL DEFAULT false,
+   file_size_limit bigint, allowed_mime_types text[]
+ );
+ CREATE TABLE storage.objects(
+   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+   bucket_id text NOT NULL REFERENCES storage.buckets(id),
+   name text NOT NULL, UNIQUE(bucket_id,name)
+ );
+ ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+ GRANT USAGE ON SCHEMA storage TO anon,authenticated;
+ GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO anon,authenticated;`);
  const dir=new URL('../../supabase/migrations/',import.meta.url);
  for(const name of (await fs.readdir(dir)).filter(name=>name.endsWith('.sql')&&name.slice(0,3)<=through).sort()){
   await db.exec(await fs.readFile(new URL(name,dir),'utf8'));
