@@ -18,6 +18,7 @@ function api({orders=[],shipments=[],customers=[],products=[],variants=[],dniErr
   if(url.pathname.endsWith('/variants'))rows=p.has('product_id')?variants:[];
   if(url.pathname.endsWith('/orders')){
    rows=orders;
+   if(p.get('id'))rows=rows.filter(o=>o.id===p.get('id').slice(3));
    if(p.get('status'))rows=rows.filter(o=>o.status===p.get('status').slice(3));
    if(p.get('sent')==='is.null')rows=rows.filter(o=>!shipments.some(s=>s.order_id===o.id&&['dispatched','delivered'].includes(s.status)));
    if(p.get('or')){
@@ -63,6 +64,19 @@ test('Página: paquetes despachados conservan acciones de entrega y rótulo fuer
  const mock=api({orders,shipments});const Page=load('app/(sistema)/envios/page.tsx',shippingMocks(mock.s)).default;
  const tree=await Page({searchParams:Promise.resolve({})});assert.equal(nodes(tree,n=>n.type===Manager).length,0);
  assert.equal(nodes(tree,n=>n.type===Followup).length,1);assert.equal(nodes(tree,n=>n.type===Followup)[0].props.shipment.order_id,'order-a');
+});
+
+test('Página: el enlace desde Pedidos acota la cola y los paquetes al mismo pedido',async()=>{
+ const id='00000000-0000-4000-8000-000000000101';
+ const other='00000000-0000-4000-8000-000000000102';
+ const orders=[{...base,id},{...base,id:other,order_number:2}];
+ const shipments=[{id:'s-a',order_id:id,status:'preparing',orders:{order_number:1}},{id:'s-b',order_id:other,status:'pending',orders:{order_number:2}}];
+ const mock=api({orders,shipments});const Page=load('app/(sistema)/envios/page.tsx',shippingMocks(mock.s)).default;
+ const tree=await Page({searchParams:Promise.resolve({pedido:id})});
+ assert.deepEqual(nodes(tree,n=>n.type===Manager)[0].props.orders.map(o=>o.id),[id]);
+ assert.deepEqual(nodes(tree,n=>n.type===Followup).map(n=>n.props.shipment.order_id),[id]);
+ assert.equal(mock.requests.find(u=>u.pathname.endsWith('/orders')).searchParams.get('id'),`eq.${id}`);
+ assert.equal(mock.requests.filter(u=>u.pathname.endsWith('/shipments')&&u.searchParams.get('order_id')===`eq.${id}`).length,2);
 });
 
 test('Página: pedidos encuentran un cliente vinculado y el número de pedido',async()=>{

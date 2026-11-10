@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireUser } from '@/lib/auth';
 import { PageTitle, Empty } from '@/components/ui';
+import { AvailableStock, OperationCell, OperationLoadError, OperationPagination, OperationTable } from '@/components/operation-ui';
 import { CatalogProductPhoto } from '@/components/catalog-product-photo';
 import { ProductForm } from '@/components/product-form';
 import { VariantSettings } from '@/components/variant-settings';
@@ -8,6 +9,11 @@ import { PRODUCT_PHOTO_MIGRATION } from '@/lib/product-photo';
 import { money, available, type Variant, type Product } from '@/lib/types';
 
 const pageSize = 50;
+const catalogColumns = [
+  { label: 'Prenda / SKU' }, { label: 'Talla' }, { label: 'Color' },
+  { label: 'Precio', numeric: true }, { label: 'Disponible', numeric: true },
+  { label: 'Físico', numeric: true }, { label: 'Reservado', numeric: true },
+];
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string }> }) {
   const { supabase: s, role } = await requireUser();
@@ -53,7 +59,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       <section className="card" aria-labelledby="catalogo-titulo">
         <div className="section-title">
           <h2 id="catalogo-titulo">Catálogo de prendas</h2>
-          <span className="muted small">{variantsError ? 'Consulta pendiente' : `${total} variante(s) · Página ${page} de ${pages}`}</span>
+          <span className="muted small">{variantsError ? 'Consulta interrumpida' : `${total} ${total === 1 ? 'variante' : 'variantes'}`}</span>
         </div>
         <form method="get" className="queue-filters search-only" role="search" aria-label="Buscar en el catálogo">
           <label>Buscar variante<input name="q" defaultValue={q} placeholder="SKU, talla o color" maxLength={80} /></label>
@@ -65,70 +71,40 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           <div className="filter-summary">
             <span>Filtro activo</span>
             <span className="filter-chip">Búsqueda: <strong>{q}</strong></span>
-            <Link className="small-link" href="/productos">Quitar filtro</Link>
           </div>
         )}
         {admin && !photosEnabled && <p className="alert info">Aplica {PRODUCT_PHOTO_MIGRATION} en Supabase para habilitar las fotos de referencia.</p>}
         {variantsError ? (
-          <div role="alert" className="alert error">No se pudo cargar el catálogo. Vuelve a buscar cuando recuperes la conexión.</div>
+          <OperationLoadError title="No se pudo cargar el catálogo" href={href(page)} />
         ) : vs.length === 0 ? (
           <Empty
             title={q ? 'Sin coincidencias' : 'Tu catálogo está vacío'}
-            text={q ? 'Prueba otro SKU, talla o color, o limpia la búsqueda.' : 'Registra tu primera prenda o importa el catálogo desde Excel.'}
+            text={q ? 'Prueba otro SKU, talla o color, o limpia la búsqueda.' : admin ? 'Abre Registrar productos para añadir una prenda o importar desde Excel.' : 'Las prendas aparecerán aquí cuando se registren en el catálogo.'}
           />
         ) : (
-          <>
-            <p className="catalog-table-scroll-hint small muted">Desliza la tabla para consultar precios y existencias.</p>
-            <div className="table-wrap" tabIndex={0} role="region" aria-label="Catálogo. Desplaza la tabla para ver todas las columnas">
-              <table className="catalog-products-table">
-                <caption className="sr-only">Productos, variantes, precios y existencias. El disponible descuenta reservas y unidades bloqueadas.</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Prenda / SKU</th>
-                    <th scope="col">Talla</th>
-                    <th scope="col">Color</th>
-                    <th scope="col" className="number">Precio</th>
-                    <th scope="col" className="number">Físico</th>
-                    <th scope="col" className="number">Reservado</th>
-                    <th scope="col" className="number">Disponible</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {vs.map(v => {
-                    const stock = available(v);
-                    return (
-                      <tr key={v.id}>
-                        <td className="cell-product">
-                          <CatalogProductPhoto
-                            productId={v.product_id}
-                            name={v.products?.name ?? 'Prenda'}
-                            photoId={v.products?.reference_photo_id ?? null}
-                            sku={v.sku}
-                            canManage={admin && photosEnabled && Boolean(v.products)}
-                          />
-                        </td>
-                        <td>{v.size}</td>
-                        <td>{v.color}</td>
-                        <td className="money">{money(v.sale_price)}</td>
-                        <td className="number">{v.on_hand}</td>
-                        <td className="number">{v.reserved}</td>
-                        <td className="number">
-                          <span className={`stock-number ${stock <= v.min_stock ? 'warning' : ''}`}>{stock}</span>
-                          {stock <= v.min_stock && <span className="stock-caption">{stock === 0 ? 'Sin disponible' : 'Stock bajo'}</span>}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </>
+          <OperationTable label="Catálogo de prendas" columns={catalogColumns} className="catalog-products-table">
+            {vs.map(v => (
+              <tr role="row" key={v.id}>
+                <OperationCell label="Prenda / SKU" heading className="cell-product">
+                  <CatalogProductPhoto
+                    productId={v.product_id}
+                    name={v.products?.name ?? 'Prenda'}
+                    photoId={v.products?.reference_photo_id ?? null}
+                    sku={v.sku}
+                    canManage={admin && photosEnabled && Boolean(v.products)}
+                  />
+                </OperationCell>
+                <OperationCell label="Talla">{v.size}</OperationCell>
+                <OperationCell label="Color">{v.color}</OperationCell>
+                <OperationCell label="Precio" className="money">{money(v.sale_price)}</OperationCell>
+                <OperationCell label="Disponible" className="number"><AvailableStock value={available(v)} minimum={v.min_stock} /></OperationCell>
+                <OperationCell label="Físico" className="number">{v.on_hand}</OperationCell>
+                <OperationCell label="Reservado" className="number">{v.reserved}</OperationCell>
+              </tr>
+            ))}
+          </OperationTable>
         )}
-        <nav className="queue-pagination" aria-label="Páginas del catálogo">
-          <Link aria-disabled={page <= 1} tabIndex={page <= 1 ? -1 : undefined} className={`btn outline ${page <= 1 ? 'disabled-link' : ''}`} href={href(Math.max(1, page - 1))}>Anterior</Link>
-          <span>Página {page} de {pages}</span>
-          <Link aria-disabled={page >= pages} tabIndex={page >= pages ? -1 : undefined} className={`btn outline ${page >= pages ? 'disabled-link' : ''}`} href={href(Math.min(pages, page + 1))}>Siguiente</Link>
-        </nav>
+        {!variantsError && <OperationPagination page={page} pages={pages} href={href} label="Páginas del catálogo" />}
       </section>
       {productsError && <div role="alert" className="alert error">No se cargó la lista de productos para el registro. Recarga la página antes de agregar una variante.</div>}
       {admin && (
