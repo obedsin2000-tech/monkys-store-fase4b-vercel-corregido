@@ -17,13 +17,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
   function listVariants(includePhoto: boolean) {
     const productFields = includePhoto ? 'name,product_code,reference_photo_id' : 'name,product_code';
-    let query = s.from('variants').select(`*,products(${productFields})`, { count: 'exact' }).order('sku');
+    let query = s.from('variants').select(`*,products(${productFields})`, { count: 'exact' }).eq('active', true).order('sku');
     if (q) query = query.or(`sku.ilike.%${q}%,barcode.ilike.%${q}%,size.ilike.%${q}%,color.ilike.%${q}%`);
     return query.range((page - 1) * pageSize, page * pageSize - 1);
   }
 
   const [{ data: products, error: productsError }, photoList] = await Promise.all([
-    s.from('products').select('id,product_code,name,brand,active,category_id,categories(name)').order('name').limit(1000),
+    s.from('products').select('id,product_code,name,brand,active,category_id,categories(name)').eq('active', true).order('name').limit(1000),
     listVariants(true),
   ]);
   const photosEnabled = !(
