@@ -16,13 +16,11 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const page = Math.max(1, Number.parseInt(params.page || '1', 10) || 1);
 
   function listVariants(includePhoto: boolean) {
-    const productFields = includePhoto ? 'name,product_code,reference_photo_id' : 'name,product_code';
-    const productMatch = q ? ',matching_product:products()' : '';
-    let query = s.from('variants').select(`*,products(${productFields})${productMatch}`, { count: 'exact' }).eq('active', true).order('sku');
+    const productFields = includePhoto ? 'name,reference_photo_id' : 'name';
+    let query = s.from('variants').select(`*,products(${productFields})`, { count: 'exact' }).eq('active', true).order('sku');
     if (q) {
       const pattern = `%${q}%`;
-      query = query.ilike('matching_product.product_code', pattern)
-        .or(`sku.ilike.${pattern},barcode.ilike.${pattern},size.ilike.${pattern},color.ilike.${pattern},matching_product.not.is.null`);
+      query = query.or(`sku.ilike.${pattern},barcode.ilike.${pattern},size.ilike.${pattern},color.ilike.${pattern}`);
     }
     return query.range((page - 1) * pageSize, page * pageSize - 1);
   }
@@ -58,7 +56,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           <span className="muted small">{variantsError ? 'Consulta pendiente' : `${total} variante(s) · Página ${page} de ${pages}`}</span>
         </div>
         <form method="get" className="queue-filters search-only" role="search" aria-label="Buscar en el catálogo">
-          <label>Buscar producto o variante<input name="q" defaultValue={q} placeholder="Código de producto, SKU, barras, talla o color" maxLength={80} /></label>
+          <label>Buscar variante<input name="q" defaultValue={q} placeholder="SKU, talla o color" maxLength={80} /></label>
           <input type="hidden" name="page" value="1" />
           <button className="btn primary">Buscar</button>
           <Link className="btn outline" href="/productos">Limpiar</Link>
@@ -76,7 +74,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         ) : vs.length === 0 ? (
           <Empty
             title={q ? 'Sin coincidencias' : 'Tu catálogo está vacío'}
-            text={q ? 'Prueba otro código de producto, SKU, código de barras, talla o color, o limpia la búsqueda.' : 'Registra tu primera prenda o importa el catálogo desde Excel.'}
+            text={q ? 'Prueba otro SKU, talla o color, o limpia la búsqueda.' : 'Registra tu primera prenda o importa el catálogo desde Excel.'}
           />
         ) : (
           <>
@@ -86,14 +84,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <caption className="sr-only">Productos, variantes, precios y existencias. El disponible descuenta reservas y unidades bloqueadas.</caption>
                 <thead>
                   <tr>
-                    <th scope="col">Prenda, código y SKU</th>
+                    <th scope="col">Prenda / SKU</th>
                     <th scope="col">Talla</th>
                     <th scope="col">Color</th>
                     <th scope="col" className="number">Precio</th>
                     <th scope="col" className="number">Físico</th>
                     <th scope="col" className="number">Reservado</th>
                     <th scope="col" className="number">Disponible</th>
-                    <th scope="col">Código de barras</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -105,7 +102,6 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                           <CatalogProductPhoto
                             productId={v.product_id}
                             name={v.products?.name ?? 'Prenda'}
-                            productCode={v.products?.product_code}
                             photoId={v.products?.reference_photo_id ?? null}
                             sku={v.sku}
                             canManage={admin && photosEnabled && Boolean(v.products)}
@@ -120,7 +116,6 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                           <span className={`stock-number ${stock <= v.min_stock ? 'warning' : ''}`}>{stock}</span>
                           {stock <= v.min_stock && <span className="stock-caption">{stock === 0 ? 'Sin disponible' : 'Stock bajo'}</span>}
                         </td>
-                        <td className="mono cell-meta">{v.barcode || 'Sin código'}</td>
                       </tr>
                     );
                   })}
