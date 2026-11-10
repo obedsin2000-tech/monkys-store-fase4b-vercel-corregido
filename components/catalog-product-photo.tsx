@@ -22,10 +22,11 @@ function MissingPhoto() {
 export function CatalogProductPhoto({
   productId,
   name,
+  productCode,
   photoId,
   sku,
   canManage,
-}: ProductPhoto & { sku: string; canManage: boolean }) {
+}: ProductPhoto & { productCode?: string; sku: string; canManage: boolean }) {
   const [failedId, setFailedId] = useState<string | null>(null);
   const [mode, setMode] = useState<DialogMode | null>(null);
   const opener = useRef<HTMLButtonElement>(null);
@@ -66,7 +67,8 @@ export function CatalogProductPhoto({
       ) : <MissingPhoto />}
       <div className="catalog-product-label">
         <strong>{name}</strong>
-        <small className="mono">{sku}</small>
+        {productCode && <small>Código de producto <span className="mono">{productCode}</span></small>}
+        <small>SKU <span className="mono">{sku}</span></small>
         {canManage && (
           <button
             type="button"
