@@ -29,9 +29,31 @@ test('Presentación: los cambios de destinatario sin guardar se distinguen antes
  const shipping={recipient_name:'Destinatario de prueba',phone:'900000000',dni:null,department:null,province:'Huancayo',district:null,carrier:'shalom',agency_address:'Agencia de prueba',tracking_code:null,status:'pending'};
  let view;await act(async()=>{view=create(React.createElement(ShipmentManager,{orders:[{id:'test-order',order_number:1,buyer:'Comprador de prueba',order_status:'confirmed',shipping}],canViewDni:false}));});
  const dispatch=()=>view.root.findAllByType('button').find(b=>b.props.children==='Marcar despachado');assert.equal(dispatch().props.disabled,false);
+ await act(async()=>view.root.findAllByType('button').find(b=>b.props.children==='Editar datos de envío').props.onClick());
  await act(async()=>view.root.findByProps({name:'recipient_name'}).props.onChange({target:{value:'Otro destinatario'}}));assert.equal(dispatch().props.disabled,true);
  assert.ok(view.root.findAllByProps({className:'pill amber'}).some(p=>p.props.children==='Cambios sin guardar'));
  await act(async()=>view.root.findByProps({name:'recipient_name'}).props.onChange({target:{value:shipping.recipient_name}}));assert.equal(dispatch().props.disabled,false);await act(async()=>view.unmount());
+});
+
+test('Presentación: la cobertura de los datos de envío se comprueba sin depender del despacho ni del DNI',async()=>{
+ const {recipientDataLabel,missingRecipientFields}=load('components/shipment-data-status.tsx');
+ const data={recipient_name:'Comprador ficticio',phone:'900000000',province:'Huancayo',agency_address:'Sede centro',carrier:'shalom'};
+ assert.equal(recipientDataLabel(null),'Sin datos guardados');
+ assert.equal(recipientDataLabel({...data,status:'pending',dni:null}),'Datos completos');
+ assert.equal(recipientDataLabel({...data,phone:' ',status:'dispatched'}),'Datos incompletos');
+ assert.deepEqual(missingRecipientFields({...data,phone:' ',agency_address:null}),['teléfono','dirección de la agencia']);
+});
+
+test('Presentación: Cobros abre la reserva indicada y conserva la selección vacía si ya no está disponible',async()=>{
+ const {PaymentForm}=load('components/payment-form.tsx',{'@/lib/phase2-actions':{}});
+ const orders=[{id:'a',order_number:101,buyer:'Cliente A',total:100,paid:0},{id:'b',order_number:102,buyer:'Cliente B',total:120,paid:50}];
+ for(const selectedOrderId of ['b','pedido-cerrado']){
+  let view;await act(async()=>{view=create(React.createElement(PaymentForm,{orders,canAdmin:false,selectedOrderId}));});
+  const valid=selectedOrderId==='b';
+  assert.equal(view.root.findAllByType('select')[0].props.value,valid?'b':'');
+  assert.equal(view.root.findAllByProps({className:'payment-summary'}).length,valid?1:0);
+  await act(async()=>view.unmount());
+ }
 });
 
 test('Presentación: la carga tiene anuncio accesible y esqueletos ocultos al lector',async()=>{

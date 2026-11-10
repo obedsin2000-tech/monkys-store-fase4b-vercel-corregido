@@ -26,6 +26,8 @@ test('UI: guardar envío bloquea cambio de pedido y repetición de la solicitud'
  const request=deferred();let calls=0;
  const {ShipmentManager}=load('components/shipment-manager.tsx',{'@/lib/phase2-actions':{shipmentAction:()=>{calls++;return request.promise;}}});
  let view;await act(async()=>{view=create(React.createElement(ShipmentManager,{orders:[{id:'a',order_number:1,buyer:'Cliente A',order_status:'confirmed'},{id:'b',order_number:2,buyer:'Cliente B',order_status:'confirmed'}],canViewDni:false}));});
+ assert.equal(view.root.findAllByType('form').length,0);
+ await act(async()=>view.root.findByType('select').props.onChange({target:{value:'a'}}));
  await act(async()=>{const form=view.root.findByType('form');void form.props.onSubmit(event);void form.props.onSubmit(event);});
  try{assert.equal(calls,1);assert.equal(view.root.findAllByType('select')[0].props.disabled,true);}
  finally{await act(async()=>request.resolve({ok:true}));await act(async()=>view.unmount());}

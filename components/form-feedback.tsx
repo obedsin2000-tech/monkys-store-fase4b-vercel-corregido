@@ -14,8 +14,8 @@ function validation(control:Control,label:string){
 }
 export function useFieldFeedback(){
  const prefix=useId();const [errors,setErrors]=useState<Record<string,string>>({});
- function props(name:string,label:string){return {
-  id:`${prefix}-${name}`,name,'aria-invalid':Boolean(errors[name]),'aria-describedby':errors[name]?`${prefix}-${name}-error`:undefined,
+ function props(name:string,label:string,hintId?:string){return {
+  id:`${prefix}-${name}`,name,'aria-invalid':Boolean(errors[name]),'aria-describedby':[errors[name]?`${prefix}-${name}-error`:null,hintId].filter(Boolean).join(' ')||undefined,
   onInvalid:(event:React.FormEvent<Control>)=>{const message=validation(event.currentTarget,label);setErrors(previous=>({...previous,[name]:message}));},
   onBlur:(event:React.FocusEvent<Control>)=>{const control=event.currentTarget;if(control.value||errors[name]){const message=validation(control,label);setErrors(previous=>({...previous,[name]:message}));}},
   onInput:(event:React.FormEvent<Control>)=>{if(errors[name]){const message=validation(event.currentTarget,label);setErrors(previous=>({...previous,[name]:message}));}}
