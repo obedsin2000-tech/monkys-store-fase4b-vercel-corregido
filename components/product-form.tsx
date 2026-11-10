@@ -133,6 +133,7 @@ export function ProductForm({ products, photosEnabled }: { products: Product[]; 
         <form onSubmit={importFile} className="form-stack">
           <p className="muted small">Solo archivos .xlsx. Usa estos encabezados en orden.</p>
           <code className="code-hint">codigo_producto, nombre, categoria, sku, talla, color, costo, precio, stock_inicial, stock_minimo</code>
+          <p className="muted small">El catálogo muestra el SKU de la columna D. El código de barras para etiquetas se genera por separado.</p>
           <p className="muted small">Se permiten hasta 500 filas nuevas. La importación es atómica. Puedes añadir las fotos después desde el catálogo.</p>
           <label>Archivo Excel<input type="file" name="archivo" accept=".xlsx" required disabled={busy} /></label>
           <button className="btn primary" disabled={busy}>{busy ? 'Validando…' : 'Importar catálogo y stock'}</button>
