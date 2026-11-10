@@ -4,7 +4,7 @@ import {PurchaseForm,SupplierForm} from '@/components/purchase-form';
 import {money,dateTime,type Variant,type Supplier,type Purchase} from '@/lib/types';
 export default async function Purchases(){const {supabase:s,role}=await requireUser();
  const [{data:variants},{data:suppliers},{data:purchases}]=await Promise.all([
- s.from('variants').select('*,products(name,product_code)').order('sku').limit(1000),
+ s.from('variants').select('*,products(name,product_code)').eq('active',true).order('sku').limit(1000),
  s.from('suppliers').select('id,name,phone').order('name'),
  s.from('purchases').select('id,reference,total,received_at,suppliers(name)').order('received_at',{ascending:false}).limit(50)
  ]);
