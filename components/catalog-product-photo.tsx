@@ -24,8 +24,9 @@ export function CatalogProductPhoto({
   name,
   photoId,
   sku,
+  category,
   canManage,
-}: ProductPhoto & { sku: string; canManage: boolean }) {
+}: ProductPhoto & { sku: string; category?: string; canManage: boolean }) {
   const [failedId, setFailedId] = useState<string | null>(null);
   const [mode, setMode] = useState<DialogMode | null>(null);
   const opener = useRef<HTMLButtonElement>(null);
@@ -67,6 +68,7 @@ export function CatalogProductPhoto({
       <div className="catalog-product-label">
         <strong>{name}</strong>
         <small>SKU <span className="mono">{sku}</span></small>
+        {category && <small>{category}</small>}
         {canManage && (
           <button
             type="button"
