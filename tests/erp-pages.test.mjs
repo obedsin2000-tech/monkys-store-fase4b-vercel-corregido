@@ -15,7 +15,17 @@ function api({orders=[],shipments=[],customers=[],products=[],variants=[],dniErr
   if(url.pathname.endsWith('/rpc/expire_reservations'))return new Response('0',{headers:{'Content-Type':'application/json'}});
   if(url.pathname.endsWith('/customers'))rows=customers;
   if(url.pathname.endsWith('/products'))rows=p.get('or')?.includes('product_code.ilike')?products:[];
-  if(url.pathname.endsWith('/variants'))rows=p.has('product_id')?variants:[];
+  if(url.pathname.endsWith('/variants')){
+   rows=variants.filter(v=>v.active);
+   if(p.has('size'))rows=rows.filter(v=>v.size===p.get('size').slice(3));
+   if(p.has('color'))rows=rows.filter(v=>v.color===p.get('color').slice(3));
+   if(p.get('products.category_id')==='is.null')rows=rows.filter(v=>v.products?.category_id===null);
+   else if(p.has('products.category_id'))rows=rows.filter(v=>v.products?.category_id===p.get('products.category_id').slice(3));
+   if(p.has('name_match.name')){
+    const term=p.get('name_match.name').slice(7,-1).toLowerCase();
+    rows=rows.filter(v=>[v.sku,v.barcode,v.size,v.color,v.products?.name].some(value=>value?.toLowerCase().includes(term)));
+   }
+  }
   if(url.pathname.endsWith('/orders')){
    rows=orders;
    if(p.get('id'))rows=rows.filter(o=>o.id===p.get('id').slice(3));
@@ -103,6 +113,49 @@ test('Catálogo: venta rápida encuentra variantes por el código del producto v
  const mock=api({products:[{id:'product-a'}],variants:[{id:'variant-a',sku:'OTHER-SKU',product_id:'product-a',active:true,on_hand:2,reserved:0,blocked:0,products:{name:'Prenda de prueba',product_code:'CODE-TEST'}}]});
  const action=load('lib/actions.ts',{'@/lib/auth':{requireUser:async()=>({supabase:mock.s})},'next/cache':{revalidatePath(){}}}).searchSaleVariantsAction;
  const result=await action('CODE-TEST');assert.equal(result.error,undefined);assert.equal(result.variants[0]?.id,'variant-a');
+});
+
+test('Catálogo: combina nombre, categoría, talla y color antes de paginar',async()=>{
+ const category='00000000-0000-4000-8000-000000000123';
+ const lastCategory='00000000-0000-4000-8000-000000000124';
+ const jacket={name:'Casaca táctica',category_id:category,categories:{name:'Casacas'}};
+ const variant={sku:'SKU-TEST',size:'M',color:'AZUL',active:true,sale_price:89,on_hand:1,reserved:0,blocked:0,min_stock:1,products:jacket};
+ const variants=[
+  ...Array.from({length:51},(_,i)=>({...variant,id:`match-${i}`})),
+  ...Array.from({length:450},(_,i)=>({...variant,id:`other-${i}`,color:'VERDE'})),
+  {...variant,id:'last',size:'2XL',color:'CAQUI',products:{name:'Pantalón',category_id:lastCategory,categories:{name:'Pantalones'}}},
+  {...variant,id:'archived',active:false,size:'Archivada'},
+ ];
+ const mock=api({variants});
+ const Filters=()=>null;const ProductPhoto=()=>null;
+ const Page=load('app/(sistema)/productos/page.tsx',{
+  '@/lib/auth':{requireUser:async()=>({supabase:mock.s,role:'operator'})},
+  '@/components/catalog-filters':{CatalogFilters:Filters},
+  '@/components/catalog-product-photo':{CatalogProductPhoto:ProductPhoto},
+ }).default;
+ const selection={categoria:category,talla:'M',color:'AZUL'};
+ const tree=await Page({searchParams:Promise.resolve({q:'casaca',...selection,page:'2'})});
+ const queries=mock.requests.filter(u=>u.pathname.endsWith('/variants')).map(u=>u.searchParams);
+ const result=queries.find(p=>p.get('limit')==='50');
+ assert.match(result.get('select'),/products!inner\(name,category_id,categories\(name\),reference_photo_id\),name_match:products\(\)/);
+ assert.match(result.get('or'),/sku\.ilike\."%casaca%".*,name_match\.not\.is\.null/);
+ assert.equal(result.get('name_match.name'),'ilike.%casaca%');
+ assert.equal(result.get('products.category_id'),`eq.${category}`);
+ assert.equal(result.get('size'),'eq.M');
+ assert.equal(result.get('color'),'eq.AZUL');
+ assert.equal(result.get('offset'),'50');
+ assert.deepEqual(queries.filter(p=>p.get('limit')==='500').map(p=>p.get('offset')),['0','500']);
+ const photos=nodes(tree,n=>n.type===ProductPhoto);
+ assert.equal(photos.length,1);
+ assert.equal(photos[0].props.category,'Casacas');
+ const filters=nodes(tree,n=>n.type===Filters)[0].props;
+ assert.deepEqual(filters.initial,selection);
+ assert.deepEqual(filters.categories.map(option=>option.label),['Casacas','Pantalones']);
+ assert.ok(filters.combinations.some(row=>row.talla==='2XL'&&row.color==='CAQUI'));
+ assert.ok(filters.combinations.every(row=>row.talla!=='Archivada'));
+ const pagination=nodes(tree,n=>n.props?.label==='Páginas del catálogo')[0].props;
+ assert.equal(pagination.pages,2);
+ assert.deepEqual(Object.fromEntries(new URL(pagination.href(1),'https://example.invalid').searchParams),{q:'casaca',...selection,page:'1'});
 });
 
 test('Página: pedidos muestran el descuento guardado y no lo inventan en ventas anteriores',async()=>{
