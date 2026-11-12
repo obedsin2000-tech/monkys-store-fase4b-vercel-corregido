@@ -35,3 +35,21 @@ test('Servidor: operador conserva la restricción de DNI y no puede reembolsar',
  assert.equal(a.calls[0].payload.p_data.dni,'');
  assert.equal((await a.refundReturnAction({key:id,returnId:id,amount:10,method:'yape'})).ok,false);assert.equal(a.calls.length,1);
 });
+
+test('Servidor: solo el administrador puede enviar una corrección válida de variante', async () => {
+ const input = {
+  variant_id: id, sku: '  CAS-001  ', size: ' M ', color: ' Azul ',
+  expected: { sku: 'CAS-010', size: 'S', color: 'Auzl' },
+ };
+ const operator = actions('lib/actions.ts', 'operator');
+ assert.equal((await operator.updateVariantIdentityAction(input)).ok, false);
+ assert.equal(operator.calls.length, 0);
+
+ const admin = actions('lib/actions.ts');
+ assert.equal((await admin.updateVariantIdentityAction({ ...input, color: '  ' })).ok, false);
+ assert.equal((await admin.updateVariantIdentityAction(input)).ok, true);
+ assert.deepEqual(admin.calls, [{
+  name: 'update_variant_identity',
+  payload: { p_variant: id, p_sku: 'CAS-001', p_size: 'M', p_color: 'Azul', p_expected: input.expected },
+ }]);
+});

@@ -125,3 +125,63 @@ test('SQL: conteo obsoleto no puede cambiar inventario después de una venta',as
  await order(db,v);await assert.rejects(()=>db.query('SELECT public.approve_inventory_count($1)',[count]),/cambiaron/);
  assert.equal((await stock(v)).on_hand,9);
 });
+
+test('SQL: corregir una variante conserva pedidos, existencias y etiqueta, y audita una sola vez', async () => {
+ const v = await catalog(db);
+ await order(db, v);
+ await order(db, v, { mode: 'reserve', method: null });
+ const readVariant = () => scalar('SELECT * FROM public.variants WHERE id=$1', [v]);
+ const readLinks = async () => ({
+  lines: (await db.query('SELECT * FROM public.order_lines WHERE variant_id=$1 ORDER BY id', [v])).rows,
+  movements: (await db.query('SELECT * FROM public.stock_movements WHERE variant_id=$1 ORDER BY id', [v])).rows,
+ });
+ const before = await readVariant();
+ const links = await readLinks();
+ const expected = { sku: before.sku, size: before.size, color: before.color };
+ const correct = () => db.query('SELECT public.update_variant_identity($1,$2,$3,$4,$5::jsonb)',
+  [v, ' cas-prueba-azul-m ', ' M ', ' Azul ', JSON.stringify(expected)]);
+
+ await correct();
+ await correct();
+ const edited = { sku: 'CAS-PRUEBA-AZUL-M', size: 'M', color: 'Azul' };
+ assert.deepEqual(await readVariant(), { ...before, ...edited });
+ assert.deepEqual(await readLinks(), links);
+ const audit = await db.query("SELECT actor_id,data FROM public.audit_events WHERE event='update_variant_identity' AND entity_id=$1", [v]);
+ assert.deepEqual(audit.rows, [{ actor_id: adminId, data: { before: expected, after: edited } }]);
+
+ await assert.rejects(
+  () => db.query('SELECT public.update_variant_identity($1,$2,$3,$4,$5::jsonb)',
+   [v, edited.sku, 'XL', 'Negro', JSON.stringify(expected)]),
+  { code: 'PT409' },
+ );
+ assert.deepEqual(await readVariant(), { ...before, ...edited });
+});
+
+test('SQL: edición de variantes bloquea duplicados y llamadas sin permisos', async () => {
+ const v = await catalog(db);
+ const before = await scalar('SELECT * FROM public.variants WHERE id=$1', [v]);
+ const expected = { sku: before.sku, size: before.size, color: before.color };
+ const { id: other } = await scalar('SELECT public.add_variant($1::jsonb) AS id', [JSON.stringify({
+  product_id: before.product_id, sku: before.sku + '-L', size: 'L', color: 'Negro', sale_price: 100,
+ })]);
+ const sibling = await scalar('SELECT sku,barcode FROM public.variants WHERE id=$1', [other]);
+ const edit = ({ sku = expected.sku, size = expected.size, color = expected.color } = {}) =>
+  db.query('SELECT public.update_variant_identity($1,$2,$3,$4,$5::jsonb)', [v, sku, size, color, JSON.stringify(expected)]);
+
+ await assert.rejects(() => edit({ sku: sibling.sku.toLowerCase() }), /SKU ya está registrado/);
+ await assert.rejects(() => edit({ size: 'L', color: 'Negro' }), /esa talla y color/);
+ await assert.rejects(() => edit({ sku: sibling.barcode }), /etiquetas/);
+ await assert.rejects(() => edit({ color: '   ' }), { code: '22023' });
+ try {
+  for (const actor of [operatorId, inactiveId]) {
+   await session(db, actor);
+   await assert.rejects(() => edit({ size: 'S' }), { code: '42501' });
+  }
+  await session(db, null, 'anon');
+  await assert.rejects(() => edit({ size: 'S' }), { code: '42501' });
+ } finally {
+  await session(db, adminId);
+ }
+ await assert.rejects(() => db.query('UPDATE public.variants SET size=$2 WHERE id=$1', [v, 'S']), { code: '42501' });
+ assert.deepEqual(await scalar('SELECT * FROM public.variants WHERE id=$1', [v]), before);
+});
