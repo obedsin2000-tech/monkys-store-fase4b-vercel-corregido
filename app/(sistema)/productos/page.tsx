@@ -3,6 +3,7 @@ import { PageTitle, Empty } from '@/components/ui';
 import { AvailableStock, OperationCell, OperationLoadError, OperationPagination, OperationTable } from '@/components/operation-ui';
 import { CatalogFilters, type CatalogCategory, type CatalogSelection } from '@/components/catalog-filters';
 import { CatalogProductPhoto } from '@/components/catalog-product-photo';
+import { CatalogVariantEditor } from '@/components/catalog-variant-editor';
 import { ProductForm } from '@/components/product-form';
 import { VariantSettings } from '@/components/variant-settings';
 import { PRODUCT_PHOTO_MIGRATION } from '@/lib/product-photo';
@@ -167,7 +168,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     sku={v.sku}
                     category={categoryName(v.products)}
                     canManage={admin && photosEnabled && Boolean(v.products)}
-                  />
+                  >
+                    {admin && (
+                      <CatalogVariantEditor
+                        name={v.products?.name ?? 'Prenda'}
+                        variant={{ id: v.id, sku: v.sku, size: v.size, color: v.color }}
+                      />
+                    )}
+                  </CatalogProductPhoto>
                 </OperationCell>
                 <OperationCell label="Talla">{v.size}</OperationCell>
                 <OperationCell label="Color">{v.color}</OperationCell>

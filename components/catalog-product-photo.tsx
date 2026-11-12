@@ -1,7 +1,7 @@
 'use client';
 
 import { ImageOff, X } from 'lucide-react';
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { ReferencePhotoInput } from '@/components/reference-photo-input';
 import { ResultMessage } from '@/components/ui';
 import { removeProductPhotoAction, saveProductPhotoAction } from '@/lib/product-photo-actions';
@@ -26,7 +26,8 @@ export function CatalogProductPhoto({
   sku,
   category,
   canManage,
-}: ProductPhoto & { sku: string; category?: string; canManage: boolean }) {
+  children,
+}: ProductPhoto & { sku: string; category?: string; canManage: boolean; children?: ReactNode }) {
   const [failedId, setFailedId] = useState<string | null>(null);
   const [mode, setMode] = useState<DialogMode | null>(null);
   const opener = useRef<HTMLButtonElement>(null);
@@ -69,15 +70,20 @@ export function CatalogProductPhoto({
         <strong>{name}</strong>
         <small>SKU <span className="mono">{sku}</span></small>
         {category && <small>{category}</small>}
-        {canManage && (
-          <button
-            type="button"
-            className="link-btn catalog-photo-manage"
-            aria-label={`Gestionar foto de ${name} · ${sku}`}
-            onClick={event => open('manage', event.currentTarget)}
-          >
-            Gestionar foto
-          </button>
+        {(canManage || children) && (
+          <div className="catalog-product-actions">
+            {children}
+            {canManage && (
+              <button
+                type="button"
+                className="link-btn catalog-photo-manage"
+                aria-label={`Gestionar foto de ${name} · ${sku}`}
+                onClick={event => open('manage', event.currentTarget)}
+              >
+                Gestionar foto
+              </button>
+            )}
+          </div>
         )}
       </div>
       {mode && (
@@ -157,13 +163,13 @@ function ProductPhotoDialog({
   return (
     <dialog
       ref={dialog}
-      className="product-photo-dialog"
+      className="catalog-dialog"
       aria-labelledby={title}
       onClose={onClose}
       onCancel={event => { if (pending.current) event.preventDefault(); }}
     >
-      <div className="product-photo-dialog-body" aria-busy={busy}>
-        <div className="product-photo-dialog-heading">
+      <div className="catalog-dialog-body" aria-busy={busy}>
+        <div className="catalog-dialog-heading">
           <div>
             <p className="small muted">Foto de referencia</p>
             <h2 id={title}>{name}</h2>

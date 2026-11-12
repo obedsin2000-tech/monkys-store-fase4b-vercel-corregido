@@ -107,3 +107,39 @@ export async function updateVariantSettingsAction(input:unknown):Promise<ActionR
   const s=await ensureAdmin();const {error}=await s.rpc('update_variant_settings',{p_variant:d.variant_id,p_price:d.sale_price,p_min_stock:d.min_stock});
   if(error)throw new Error(error.message);changed();return {ok:true,message:'Precio y stock mínimo actualizados.'};}catch(e){return err(e);}
 }
+
+const variantIdentitySchema = z.object({
+ variant_id: uuid,
+ sku: z.string().trim().min(2, 'Ingresa un SKU de al menos 2 caracteres.').max(60, 'El SKU admite hasta 60 caracteres.'),
+ size: z.string().trim().min(1, 'Ingresa la talla.').max(30, 'La talla admite hasta 30 caracteres.'),
+ color: z.string().trim().min(1, 'Ingresa el color.').max(40, 'El color admite hasta 40 caracteres.'),
+ expected: z.object({ sku: z.string(), size: z.string(), color: z.string() }),
+});
+
+export async function updateVariantIdentityAction(input: unknown): Promise<ActionResult> {
+ const parsed = variantIdentitySchema.safeParse(input);
+ if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+
+ const d = parsed.data;
+ const { supabase: s, role } = await requireUser();
+ if (role !== 'admin') return { ok: false, error: 'La edición de variantes requiere una sesión de administrador activa.' };
+
+ const { error } = await s.rpc('update_variant_identity', {
+  p_variant: d.variant_id,
+  p_sku: d.sku,
+  p_size: d.size,
+  p_color: d.color,
+  p_expected: d.expected,
+ });
+ if (error?.code === 'PGRST202') {
+  return { ok: false, error: 'Aplica 014_editar_variantes.sql en Supabase para habilitar la edición.' };
+ }
+ if (error?.code === '42501') {
+  return { ok: false, error: 'La edición de variantes requiere una sesión de administrador activa.' };
+ }
+ if (error && ['22023', '23505', 'P0002', 'PT409'].includes(error.code)) {
+  return { ok: false, error: error.message };
+ }
+ if (error) return { ok: false, error: 'No se pudo confirmar el cambio. Intenta nuevamente.' };
+ return { ok: true, message: 'Variante actualizada.' };
+}

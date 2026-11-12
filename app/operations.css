@@ -234,7 +234,7 @@ html { scroll-padding-top: 80px; }
 }
 
 @media (pointer: coarse) {
-  .btn, .mob-menu, .mob-close, .catalog-photo-manage, .order-detail summary { min-height: 44px; }
+  .btn, .mob-menu, .mob-close, .catalog-photo-manage, .catalog-variant-edit, .order-detail summary { min-height: 44px; }
   .order-actions-row select { min-height: 44px; }
   .order-links .small-link, .shipment-actions .small-link { min-height: 44px; }
 }
