@@ -53,3 +53,27 @@ test('Servidor: solo el administrador puede enviar una corrección válida de va
   payload: { p_variant: id, p_sku: 'CAS-001', p_size: 'M', p_color: 'Azul', p_expected: input.expected },
  }]);
 });
+
+test('Servidor: guarda los datos de la prenda y su variante en una sola llamada', async () => {
+ const input = {
+  variant_id: id, sku: 'CAS-001-M', size: 'M', color: 'Negro',
+  expected: { sku: 'CAS-010-M', size: 'M', color: 'Negro' },
+  product: {
+   values: { product_code: ' CAS-001 ', name: ' Casaca táctica ', category: ' Casacas ', brand: ' Monky ' },
+   expected: { product_code: 'CAS-010', name: 'Casaca', category: '', brand: '' },
+  },
+ };
+ const admin = actions('lib/actions.ts');
+ assert.equal((await admin.updateVariantIdentityAction({
+  ...input, product: { ...input.product, values: { ...input.product.values, product_code: ' ' } },
+ })).ok, false);
+ assert.equal((await admin.updateVariantIdentityAction(input)).ok, true);
+ assert.deepEqual(admin.calls, [{
+  name: 'update_catalog_variant',
+  payload: {
+   p_variant: id, p_sku: 'CAS-001-M', p_size: 'M', p_color: 'Negro', p_expected: input.expected,
+   p_product: { product_code: 'CAS-001', name: 'Casaca táctica', category: 'Casacas', brand: 'Monky' },
+   p_expected_product: input.product.expected,
+  },
+ }]);
+});

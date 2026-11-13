@@ -20,7 +20,7 @@ const catalogColumns = [
 
 type CatalogParams = Partial<Record<'q' | 'page' | keyof CatalogSelection, string | string[]>>;
 type CategoryReference = Pick<Product, 'category_id' | 'categories'>;
-type CatalogVariant = Variant & { products?: CategoryReference | null };
+type CatalogVariant = Variant & { products?: (CategoryReference & Pick<Product, 'brand'>) | null };
 type FilterRow = Pick<Variant, 'size' | 'color'> & { products: CategoryReference | null };
 
 function param(value: string | string[] | undefined) {
@@ -34,6 +34,7 @@ function categoryName(product?: CategoryReference | null) {
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<CatalogParams> }) {
   const { supabase: s, role } = await requireUser();
+  const admin = role === 'admin';
   const params = await searchParams;
   const q = param(params.q).replace(/[\0*]/g, ' ').slice(0, 80).trim();
   const category = param(params.categoria);
@@ -46,7 +47,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const page = Number.isSafeInteger(requestedPage) && requestedPage >= 1 && requestedPage <= 1_000_000 ? requestedPage : 1;
 
   function listVariants(includePhoto: boolean) {
-    const productFields = 'name,category_id,categories(name)' + (includePhoto ? ',reference_photo_id' : '');
+    const productFields = 'name,category_id,categories(name)'
+      + (includePhoto ? ',reference_photo_id' : '')
+      + (admin ? ',product_code,brand' : '');
     const productJoin = selection.categoria ? 'products!inner' : 'products';
     const nameJoin = q ? ',name_match:products()' : '';
     let query = s.from('variants').select(`*,${productJoin}(${productFields})${nameJoin}`, { count: 'exact' }).eq('active', true).order('sku');
@@ -118,7 +121,6 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     ['Color', selection.color],
   ].filter(([, value]) => Boolean(value));
   const filtered = activeFilters.length > 0;
-  const admin = role === 'admin';
 
   return (
     <>
@@ -173,6 +175,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                       <CatalogVariantEditor
                         name={v.products?.name ?? 'Prenda'}
                         variant={{ id: v.id, sku: v.sku, size: v.size, color: v.color }}
+                        product={v.products ? {
+                          product_code: v.products.product_code,
+                          name: v.products.name,
+                          category: v.products.categories?.name ?? '',
+                          brand: v.products.brand ?? '',
+                        } : undefined}
                       />
                     )}
                   </CatalogProductPhoto>

@@ -185,3 +185,73 @@ test('SQL: edición de variantes bloquea duplicados y llamadas sin permisos', as
  await assert.rejects(() => db.query('UPDATE public.variants SET size=$2 WHERE id=$1', [v, 'S']), { code: '42501' });
  assert.deepEqual(await scalar('SELECT * FROM public.variants WHERE id=$1', [v]), before);
 });
+
+test('SQL: la edición de catálogo cambia la prenda compartida y solo la variante elegida', async () => {
+ const id = await catalog(db);
+ const v = await scalar('SELECT * FROM public.variants WHERE id=$1', [id]);
+ const expected = { sku: v.sku, size: v.size, color: v.color };
+ const before = await scalar('SELECT * FROM public.products WHERE id=$1', [v.product_id]);
+ const expectedProduct = { product_code: before.product_code, name: before.name, category: '', brand: '' };
+ const { id: siblingId } = await scalar('SELECT public.add_variant($1::jsonb) AS id', [JSON.stringify({
+  product_id: before.id, sku: v.sku + '-XL', size: 'XL', color: 'Negro', sale_price: 100,
+ })]);
+ const sibling = await scalar('SELECT * FROM public.variants WHERE id=$1', [siblingId]);
+ const category = 'Casacas de prueba';
+ const categoryCode = before.product_code + '-CAT';
+ await db.query('SELECT public.create_catalog_item($1::jsonb)', [JSON.stringify({
+  product_code: categoryCode, sku: categoryCode, name: 'Prenda con categoría', category, sale_price: 100,
+ })]);
+ const { id: categoryId } = await scalar('SELECT id FROM public.categories WHERE name=$1', [category]);
+ const edited = { sku: v.sku + '-M', size: 'M', color: 'Azul' };
+ const product = { product_code: before.product_code + '-N', name: 'Casaca corregida', category, brand: 'Marca de prueba' };
+ const correct = (values = product, viewed = expectedProduct) => db.query(
+  'SELECT public.update_catalog_variant($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7::jsonb)',
+  [id, edited.sku, edited.size, edited.color, JSON.stringify(expected), JSON.stringify(values), JSON.stringify(viewed)],
+ );
+
+ await correct();
+ await correct();
+ assert.deepEqual(await scalar('SELECT * FROM public.variants WHERE id=$1', [id]), { ...v, ...edited });
+ assert.deepEqual(await scalar('SELECT * FROM public.variants WHERE id=$1', [siblingId]), sibling);
+ assert.deepEqual(await scalar('SELECT * FROM public.products WHERE id=$1', [before.id]), {
+  ...before, product_code: product.product_code, name: product.name, category_id: categoryId, brand: product.brand,
+ });
+ assert.deepEqual((await db.query("SELECT actor_id,data FROM public.audit_events WHERE event='update_catalog_product' AND entity_id=$1", [before.id])).rows,
+  [{ actor_id: adminId, data: { before: expectedProduct, after: product } }]);
+ await assert.rejects(() => correct({ ...product, name: 'Edición simultánea' }), { code: 'PT409' });
+
+ await correct({ ...product, category: '', brand: '' }, product);
+ assert.deepEqual(await scalar('SELECT category_id,brand FROM public.products WHERE id=$1', [before.id]), { category_id: null, brand: null });
+ assert.equal((await scalar('SELECT name FROM public.categories WHERE id=$1', [categoryId])).name, product.category);
+});
+
+test('SQL: código duplicado revierte toda la edición y el operador no puede guardar', async () => {
+ const id = await catalog(db);
+ const v = await scalar('SELECT * FROM public.variants WHERE id=$1', [id]);
+ const before = await scalar('SELECT * FROM public.products WHERE id=$1', [v.product_id]);
+ const { product_code: duplicate } = await scalar(
+  'SELECT p.product_code FROM public.variants v JOIN public.products p ON p.id=v.product_id WHERE v.id=$1',
+  [await catalog(db)],
+ );
+ const expected = { sku: v.sku, size: v.size, color: v.color };
+ const expectedProduct = { product_code: before.product_code, name: before.name, brand: '', category: '' };
+ const edit = (product_code = duplicate) => db.query(
+  'SELECT public.update_catalog_variant($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7::jsonb)',
+  [id, v.sku + '-2', 'S', 'Rojo', JSON.stringify(expected),
+   JSON.stringify({ ...expectedProduct, product_code, category: 'Categoría de reversión' }), JSON.stringify(expectedProduct)],
+ );
+
+ await assert.rejects(() => edit(), /código de producto ya está registrado/);
+ try {
+  await session(db, operatorId);
+  await assert.rejects(() => edit(before.product_code), { code: '42501' });
+  await session(db, null, 'anon');
+  await assert.rejects(() => edit(before.product_code), { code: '42501' });
+ } finally {
+  await session(db, adminId);
+ }
+ assert.deepEqual(await scalar('SELECT * FROM public.variants WHERE id=$1', [id]), v);
+ assert.deepEqual(await scalar('SELECT * FROM public.products WHERE id=$1', [before.id]), before);
+ assert.equal(await scalar("SELECT id FROM public.categories WHERE name='Categoría de reversión'"), undefined);
+ assert.equal(await scalar("SELECT id FROM public.audit_events WHERE event='update_variant_identity' AND entity_id=$1", [id]), undefined);
+});
