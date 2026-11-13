@@ -307,7 +307,6 @@ input[aria-invalid="true"]:focus,select[aria-invalid="true"]:focus,textarea[aria
 .catalog-dialog-body { display: grid; gap: 16px; padding: 20px; }
 .catalog-dialog-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
 .catalog-dialog-heading p, .catalog-dialog-heading h2 { margin: 0; overflow-wrap: anywhere; }
-.variant-edit-dialog { width: min(520px, calc(100vw - 32px)); }
 .product-photo-close { min-width: 42px; padding: 8px; flex-shrink: 0; }
 .product-photo-enlarged {
   display: grid;

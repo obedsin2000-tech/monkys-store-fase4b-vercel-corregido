@@ -7,8 +7,13 @@ import { updateVariantIdentityAction } from '@/lib/actions';
 import type { ActionResult, Variant } from '@/lib/types';
 
 type EditableVariant = Pick<Variant, 'id' | 'sku' | 'size' | 'color'>;
+type EditableProduct = { product_code: string; name: string; category: string; brand: string };
 
-export function CatalogVariantEditor({ name, variant }: { name: string; variant: EditableVariant }) {
+export function CatalogVariantEditor({ name, variant, product }: {
+  name: string;
+  variant: EditableVariant;
+  product?: EditableProduct;
+}) {
   const router = useRouter();
   const trigger = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -26,7 +31,7 @@ export function CatalogVariantEditor({ name, variant }: { name: string; variant:
         Editar variante
       </button>
       {open && (
-        <VariantDialog name={name} variant={variant} onClose={saved => {
+        <VariantDialog name={name} variant={variant} product={product} onClose={saved => {
           setOpen(false);
           trigger.current?.focus();
           if (saved) router.refresh();
@@ -36,9 +41,10 @@ export function CatalogVariantEditor({ name, variant }: { name: string; variant:
   );
 }
 
-function VariantDialog({ name, variant, onClose }: {
+function VariantDialog({ name, variant, product, onClose }: {
   name: string;
   variant: EditableVariant;
+  product?: EditableProduct;
   onClose: (saved: boolean) => void;
 }) {
   const title = useId();
@@ -47,10 +53,19 @@ function VariantDialog({ name, variant, onClose }: {
   const pending = useRef(false);
   const [expected] = useState(() => ({ sku: variant.sku, size: variant.size, color: variant.color }));
   const [draft, setDraft] = useState(expected);
+  const [expectedProduct] = useState(product);
+  const [productDraft, setProductDraft] = useState(expectedProduct);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ActionResult | null>(null);
   const saved = result?.ok === true;
-  const edited = draft.sku.trim() !== expected.sku || draft.size.trim() !== expected.size || draft.color.trim() !== expected.color;
+  const variantEdited = draft.sku.trim() !== expected.sku || draft.size.trim() !== expected.size || draft.color.trim() !== expected.color;
+  const productEdited = productDraft && expectedProduct && (
+    productDraft.product_code.trim() !== expectedProduct.product_code ||
+    productDraft.name.trim() !== expectedProduct.name ||
+    productDraft.category.trim() !== expectedProduct.category ||
+    productDraft.brand.trim() !== expectedProduct.brand
+  );
+  const edited = variantEdited || productEdited;
 
   useEffect(() => {
     if (dialog.current && !dialog.current.open) dialog.current.showModal();
@@ -66,7 +81,12 @@ function VariantDialog({ name, variant, onClose }: {
     setBusy(true);
     setResult(null);
     try {
-      setResult(await updateVariantIdentityAction({ variant_id: variant.id, ...draft, expected }));
+      setResult(await updateVariantIdentityAction({
+        variant_id: variant.id,
+        ...draft,
+        expected,
+        product: productEdited ? { values: productDraft, expected: expectedProduct } : undefined,
+      }));
     } catch {
       setResult({ ok: false, error: 'No se pudo confirmar el cambio. Intenta nuevamente.' });
     } finally {
@@ -78,7 +98,7 @@ function VariantDialog({ name, variant, onClose }: {
   return (
     <dialog
       ref={dialog}
-      className="catalog-dialog variant-edit-dialog"
+      className="catalog-dialog"
       aria-labelledby={title}
       onClose={() => onClose(saved)}
       onCancel={event => { if (pending.current) event.preventDefault(); }}
@@ -93,23 +113,33 @@ function VariantDialog({ name, variant, onClose }: {
         <form className="form-stack" onSubmit={submit} aria-busy={busy}>
           {saved ? <ResultMessage result={result} /> : (
             <>
-              <label>
-                SKU
-                <input value={draft.sku} required minLength={2} maxLength={60} disabled={busy} spellCheck={false}
-                  onChange={event => setDraft({ ...draft, sku: event.target.value })} />
-              </label>
-              <div className="grid two">
-                <label>
-                  Talla
-                  <input value={draft.size} required maxLength={30} disabled={busy}
-                    onChange={event => setDraft({ ...draft, size: event.target.value })} />
-                </label>
-                <label>
-                  Color
-                  <input value={draft.color} required maxLength={40} disabled={busy}
-                    onChange={event => setDraft({ ...draft, color: event.target.value })} />
-                </label>
-              </div>
+              {productDraft && (
+                <fieldset disabled={busy} className="form-section operation-form-section">
+                  <legend>Datos del producto</legend>
+                  <p className="field-hint">Se comparten entre todas las tallas y colores de esta prenda.</p>
+                  <div className="grid two">
+                    <label>Código de producto *<input value={productDraft.product_code} required minLength={2} maxLength={40} spellCheck={false}
+                      onChange={event => setProductDraft({ ...productDraft, product_code: event.target.value })} /></label>
+                    <label>Nombre *<input value={productDraft.name} required minLength={2} maxLength={120}
+                      onChange={event => setProductDraft({ ...productDraft, name: event.target.value })} /></label>
+                    <label>Categoría<input value={productDraft.category} minLength={2} maxLength={80}
+                      onChange={event => setProductDraft({ ...productDraft, category: event.target.value })} /></label>
+                    <label>Marca (opcional)<input value={productDraft.brand} maxLength={80}
+                      onChange={event => setProductDraft({ ...productDraft, brand: event.target.value })} /></label>
+                  </div>
+                </fieldset>
+              )}
+              <fieldset disabled={busy} className="form-section operation-form-section">
+                <legend>Datos de la variante</legend>
+                <div className="grid three">
+                  <label>SKU único *<input value={draft.sku} required minLength={2} maxLength={60} spellCheck={false}
+                    onChange={event => setDraft({ ...draft, sku: event.target.value })} /></label>
+                  <label>Talla *<input value={draft.size} required maxLength={30}
+                    onChange={event => setDraft({ ...draft, size: event.target.value })} /></label>
+                  <label>Color *<input value={draft.color} required maxLength={40}
+                    onChange={event => setDraft({ ...draft, color: event.target.value })} /></label>
+                </div>
+              </fieldset>
               <ResultMessage result={result} />
             </>
           )}
