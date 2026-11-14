@@ -1,16 +1,19 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createClient} from '@supabase/supabase-js';
+import {renderToStaticMarkup} from 'react-dom/server';
 import {load,nodes} from './helpers/components.mjs';
 
 // Usa el cliente Supabase real para comprobar la consulta HTTP generada.
 // El transporte simula la API; no se conecta a una cuenta ni reemplaza pruebas de PostgREST.
-function api({orders=[],shipments=[],customers=[],products=[],variants=[],dniError=false}={}){
+function api({orders=[],shipments=[],customers=[],products=[],variants=[],dniError=false,dniRows}={}){
  const requests=[];
- const fetch=async raw=>{
+ const fetch=async (raw,options)=>{
   const url=new URL(raw);requests.push(url);const p=url.searchParams;let rows=[];
   if(url.pathname.endsWith('/rpc/admin_get_shipment_dni')){
-   return new Response(JSON.stringify(dniError?{message:'Fallo de lectura simulado'}:shipments.map(s=>({order_id:s.order_id,dni:null}))),{status:dniError?500:200,headers:{'Content-Type':'application/json'}});
+   const {p_orders}=JSON.parse(options.body);
+   const records=dniRows??shipments.map(s=>({order_id:s.order_id,dni:null}));
+   return new Response(JSON.stringify(dniError?{message:'Fallo de lectura simulado'}:records.filter(record=>p_orders.includes(record.order_id))),{status:dniError?500:200,headers:{'Content-Type':'application/json'}});
   }
   if(url.pathname.endsWith('/rpc/expire_reservations'))return new Response('0',{headers:{'Content-Type':'application/json'}});
   if(url.pathname.endsWith('/customers'))rows=customers;
@@ -87,6 +90,52 @@ test('Página: el enlace desde Pedidos acota la cola y los paquetes al mismo ped
  assert.deepEqual(nodes(tree,n=>n.type===Followup).map(n=>n.props.shipment.order_id),[id]);
  assert.equal(mock.requests.find(u=>u.pathname.endsWith('/orders')).searchParams.get('id'),`eq.${id}`);
  assert.equal(mock.requests.filter(u=>u.pathname.endsWith('/shipments')&&u.searchParams.get('order_id')===`eq.${id}`).length,2);
+});
+
+const labelOrder = '00000000-0000-4000-8000-000000000111';
+const labelShipment = {
+ order_id: labelOrder, recipient_name: 'Destinatario ficticio', phone: '900000000',
+ province: 'Provincia de prueba', carrier: 'shalom', agency_address: 'Agencia de prueba',
+ tracking_code: 'GUIA-PRUEBA', orders: { order_number: 42 },
+};
+const labelPage = (s, role) => load('app/(sistema)/envios/rotulos/page.tsx', {
+ '@/lib/auth': { requireUser: async () => ({ supabase: s, role }) },
+}).default;
+
+test('Rótulos: la vista habitual del administrador incluye el DNI guardado y conserva la guía', async () => {
+ const secondOrder = '00000000-0000-4000-8000-000000000112';
+ const shipments = [labelShipment, { ...labelShipment, order_id: secondOrder, recipient_name: 'Segundo destinatario ficticio' }];
+ const mock = api({ shipments, dniRows: [{ order_id: secondOrder, dni: null }, { order_id: labelOrder, dni: '00001234' }] });
+ const tree = await labelPage(mock.s, 'admin')({ searchParams: Promise.resolve({ ids: [labelOrder, secondOrder].join(',') }) });
+ const markup = renderToStaticMarkup(tree);
+ const labels = markup.split('class="shipping-label"').slice(1);
+
+ assert.equal(labels.length, 2);
+ assert.match(labels[0], /Destinatario ficticio.*DNI:.*00001234.*GUIA-PRUEBA/);
+ assert.doesNotMatch(labels[1], /DNI:|00001234/);
+ assert.doesNotMatch(markup, /Pedido #42|Pedido sin referencia/);
+ const selection = mock.requests.find(url => url.pathname.endsWith('/shipments')).searchParams.get('select');
+ assert.doesNotMatch(selection, /dni|order_number|orders\(/);
+ assert.equal(mock.requests.filter(url => url.pathname.endsWith('/rpc/admin_get_shipment_dni')).length, 1);
+});
+
+test('Rótulos: solo el administrador consulta DNI y puede elegir imprimir sin ese dato', async () => {
+ for (const [role, dni] of [['operator', '1'], ['admin', '0']]) {
+  const mock = api({ shipments: [labelShipment], dniRows: [{ order_id: labelOrder, dni: '00001234' }] });
+  const tree = await labelPage(mock.s, role)({ searchParams: Promise.resolve({ ids: labelOrder, dni }) });
+  const markup = renderToStaticMarkup(tree);
+  assert.match(markup, /Destinatario ficticio/);
+  assert.doesNotMatch(markup, /DNI:|00001234|Pedido #42/);
+  assert.ok(mock.requests.every(url => !url.pathname.endsWith('/rpc/admin_get_shipment_dni')));
+ }
+});
+
+test('Rótulos: una respuesta incompleta de DNI muestra un aviso en lugar de imprimir datos incompletos', async () => {
+ const mock = api({ shipments: [labelShipment], dniRows: [] });
+ const tree = await labelPage(mock.s, 'admin')({ searchParams: Promise.resolve({ ids: labelOrder }) });
+ const markup = renderToStaticMarkup(tree);
+ assert.match(markup, /No se pudieron cargar los DNI autorizados/);
+ assert.doesNotMatch(markup, /shipping-label/);
 });
 
 test('Página: pedidos encuentran un cliente vinculado y el número de pedido',async()=>{

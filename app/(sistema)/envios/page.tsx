@@ -118,7 +118,7 @@ export default async function Envios({searchParams}:{searchParams:Promise<{q?:st
  )}
  {!shipmentsError&&<OperationPagination page={shipmentPage} pages={shipmentPages} href={shipmentHref} label="Páginas de paquetes registrados"/>}
  {pendingPrintError&&<div role="alert" className="alert error">No se pudo consultar la lista de rótulos pendientes. Recarga la página antes de imprimir el lote.</div>}
- <details className="disclosure export-options"><summary>Exportación y opciones de rótulos <small>CSV para Word y rótulos con DNI autorizado</small></summary><div className="action-row" style={{padding:16}}><Link className="btn outline" href="/api/envios/exportar">Descargar CSV sin DNI</Link>{role==='admin'&&<><Link className="btn outline" href="/api/envios/exportar?dni=1">CSV con DNI (admin)</Link>{printIds&&<Link className="btn outline" href={`/envios/rotulos?ids=${encodeURIComponent(printIds)}&dni=1`} target="_blank">Rótulos con DNI (admin)</Link>}</>}</div></details></section>
+ <details className="disclosure export-options"><summary>Exportación y opciones de rótulos <small>CSV para Word e impresión sin DNI</small></summary><div className="action-row" style={{padding:16}}><Link className="btn outline" href="/api/envios/exportar">Descargar CSV sin DNI</Link>{role==='admin'&&<><Link className="btn outline" href="/api/envios/exportar?dni=1">CSV con DNI (admin)</Link>{printIds&&<Link className="btn outline" href={`/envios/rotulos?ids=${encodeURIComponent(printIds)}&dni=0`} target="_blank">Rótulos sin DNI</Link>}</>}</div></details></section>
  <p className="muted small">El seguimiento se actualiza manualmente. Marca “Despachado” al entregar el paquete a la agencia y “Entregado” cuando lo reciba el destinatario.</p>
  </>;
 }
