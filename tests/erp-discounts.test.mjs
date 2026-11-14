@@ -130,9 +130,10 @@ test('Descuentos UI: conserva datos y clave al fallar; guarda una vez y limpia d
  await act(async()=>discount().props.onChange({target:{value:'12.35'}}));
  await act(async()=>view.root.findByProps({value:'reserve'}).props.onChange({target:{value:'paid'}}));
  const event={preventDefault(){}};
- await act(async()=>{void view.root.findByType('form').props.onSubmit(event);void view.root.findByType('form').props.onSubmit(event);});
+ const checkout=()=>view.root.findByProps({'aria-label':'Confirmar pedido'});
+ await act(async()=>{void checkout().props.onSubmit(event);void checkout().props.onSubmit(event);});
  assert.equal(payloads.length,1);assert.equal(payloads[0].lines[0].unit_discount,12.35);assert.equal(payloads[0].lines[0].quantity,2);assert.equal(payloads[0].lines[0].expected_unit_price,100);
  await act(async()=>request.resolve({ok:false,error:'Fallo simulado'}));assert.equal(discount().props.value,'12.35');
- await act(async()=>view.root.findByType('form').props.onSubmit(event));assert.equal(payloads[1].request_key,payloads[0].request_key);assert.equal(view.root.findAllByProps({name:'discount-v1'}).length,0);
+ await act(async()=>checkout().props.onSubmit(event));assert.equal(payloads[1].request_key,payloads[0].request_key);assert.equal(view.root.findAllByProps({name:'discount-v1'}).length,0);
  await act(async()=>view.unmount());
 });

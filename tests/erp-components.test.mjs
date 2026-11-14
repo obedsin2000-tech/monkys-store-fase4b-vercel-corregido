@@ -65,3 +65,55 @@ test('UI: dos lecturas simultáneas no agregan dos unidades cuando queda solo un
  const line=view.root.findAllByProps({className:'cart-line'})[0];assert.ok(line.findByType('span').props.children.join('').includes('1 und.'));
  assert.equal(view.root.findByType('result').props.result.ok,false);await act(async()=>view.unmount());
 });
+
+test('UI: añadir varias prendas acumula unidades por SKU y conserva el pedido hasta la confirmación', async () => {
+ const items = [
+  { ...variant, active: true, sku: 'TEST-A', on_hand: 5, reserved: 1, blocked: 1 },
+  { ...variant, active: true, id: 'v2', sku: 'TEST-B', on_hand: 1 },
+  { ...variant, active: true, id: 'v3', sku: 'TEST-C', on_hand: 4 },
+ ];
+ const searches = [];
+ const orders = [];
+ const { SaleForm } = load('components/sale-form.tsx', {
+  '@/lib/actions': {
+   searchSaleVariantsAction: async term => { searches.push(term); return { variants: items }; },
+   createOrderAction: async order => { orders.push(order); return { ok: true }; },
+  },
+ });
+ let view;
+ await act(async () => { view = create(React.createElement(SaleForm, { variants: [], customers: [] })); });
+ const picker = () => view.root.findByProps({ 'aria-label': 'Añadir prenda' });
+ const change = (input, value) => act(async () => input.props.onChange({ target: { value } }));
+ const add = () => act(async () => picker().props.onSubmit(event));
+ const lines = () => view.root.findAllByProps({ className: 'cart-line' });
+ const quantity = () => picker().findByProps({ type: 'number' });
+ try {
+  await change(picker().findByProps({ type: 'search' }), 'TEST');
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 250)); });
+  assert.deepEqual(searches, ['TEST']);
+  await change(picker().findByType('select'), 'v1');
+  await add();
+  assert.equal(quantity().props.max, 2);
+  await change(quantity(), '2');
+  await add();
+  assert.equal(quantity().props.disabled, true);
+  assert.equal(picker().findByType('button').props.disabled, true);
+  assert.equal(lines().length, 1);
+  assert.match(lines()[0].findByType('span').props.children.join(''), /3 und\./);
+
+  await change(picker().findByType('select'), 'v2');
+  await add();
+  await change(picker().findByType('select'), 'v3');
+  await add();
+  assert.equal(lines().length, 3);
+  assert.equal(orders.length, 0);
+
+  await change(view.root.findByProps({ value: 'reserve' }), 'paid');
+  await act(async () => view.root.findByProps({ 'aria-label': 'Confirmar pedido' }).props.onSubmit(event));
+  assert.equal(orders.length, 1);
+  assert.deepEqual(orders[0].lines.map(({ variant_id, quantity }) => [variant_id, quantity]), [['v1', 3], ['v2', 1], ['v3', 1]]);
+  assert.equal(lines().length, 0);
+ } finally {
+  await act(async () => view.unmount());
+ }
+});
