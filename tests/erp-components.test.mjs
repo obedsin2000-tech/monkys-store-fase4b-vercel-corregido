@@ -8,6 +8,37 @@ globalThis.confirm=()=>true;
 const event={preventDefault(){}};
 const variant={id:'v1',sku:'TEST',barcode:'MK0000000001',on_hand:10,reserved:0,blocked:0,avg_cost:50,sale_price:100,products:{name:'Prenda ficticia'}};
 
+test('UI: el registro explica el límite de correo y evita un envío duplicado', async () => {
+ const request = deferred();
+ const submissions = [];
+ const {LoginForm} = load('components/login-form.tsx', {
+  '@/lib/supabase/client': {createClient: () => ({
+   auth: {signUp: input => { submissions.push(input); return request.promise; }},
+  })},
+ });
+ const savedWindow = globalThis.window;
+ globalThis.window = {location: {origin: 'https://erp.example.invalid'}};
+ let view;
+ try {
+  await act(async () => { view = create(React.createElement(LoginForm)); });
+  await act(async () => view.root.findByProps({type: 'button'}).props.onClick());
+  const form = view.root.findByType('form');
+  await act(async () => {
+   void form.props.onSubmit(event);
+   void form.props.onSubmit(event);
+  });
+  assert.equal(submissions.length, 1);
+  assert.equal(submissions[0].options.emailRedirectTo, 'https://erp.example.invalid/auth/callback');
+  await act(async () => request.resolve({error: {code: 'over_email_send_rate_limit', message: 'email rate limit exceeded'}}));
+  assert.match(view.root.findByProps({role: 'alert'}).props.children, /límite de correos de confirmación/);
+  assert.equal(view.root.findAllByType('button')[0].props.disabled, false);
+ } finally {
+  if (view) await act(async () => view.unmount());
+  if (savedWindow === undefined) delete globalThis.window;
+  else globalThis.window = savedWindow;
+ }
+});
+
 test('UI: un conteo no guardado bloquea el envío y permite reintentar la misma cantidad',async()=>{
  let fail=true;
  const {InventoryCountManager}=load('components/inventory-count-manager.tsx',{'@/lib/phase4b-actions':{
